@@ -10,4 +10,7 @@ $settings = Get-Content $settingPath -Encoding UTF8 -Raw  | ConvertFrom-Json
 $dllPath = [IO.Path]::Combine($ProjectDir, $settings.destination)
 [string[]] $excludes = $settings.excludes
 
-. ./copy_dlls.ps1 $TargetDir $dllPath $excludes
+$pattern = $settings.pattern
+if ($pattern -eq $null) { $pattern = '*' }
+
+. ./copy_dlls.ps1 $TargetDir $dllPath $pattern $excludes

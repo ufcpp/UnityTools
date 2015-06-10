@@ -1,4 +1,5 @@
 {
     "destination": "../../project/Assets/Dlls",
+    "pattern": "*",
     "excludes": [ "UnityEngine", "UnityEditor" ]
 }

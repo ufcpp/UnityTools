@@ -1,9 +1,9 @@
-param([string] $source, [string] $destination, [string[]] $excludes)
+param([string] $source, [string] $destination, [string] $pattern, [string[]] $excludes)
 
 foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
 {
     $destinationFiles = [IO.Path]::Combine($destination, '*.' + $ext)
-    $sourceFiles = [IO.Path]::Combine($source, '*.' + $ext)
+    $sourceFiles = [IO.Path]::Combine($source, $pattern + '.' + $ext)
     [string[]] $excludeFiles = $excludes | %{ '*' + $_ + '.*'}
 
     if (Test-Path $destinationFiles) { rm $destinationFiles }

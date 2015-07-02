@@ -1,5 +1,10 @@
 param([string] $source, [string] $destination, [string] $pattern, [string[]] $excludes)
 
+if (-not (Test-Path $destination))
+{
+    mkdir $destination
+}
+
 foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
 {
     $destinationFiles = [IO.Path]::Combine($destination, '*.' + $ext)

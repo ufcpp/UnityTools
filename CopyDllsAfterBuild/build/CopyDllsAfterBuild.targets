@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PostBuildEvent>pushd "$(ProjectDir)..\packages\CopyDllsAfterBuild.1.1.2.0\tools\" &amp; postbuild "$(ProjectDir)" "$(TargetDir)" &amp; popd</PostBuildEvent>
+    <PostBuildEvent>pushd "$(ProjectDir)..\packages\CopyDllsAfterBuild.1.1.4.0\tools\" &amp; postbuild "$(ProjectDir)" "$(TargetDir)" &amp; popd</PostBuildEvent>
   </PropertyGroup>
 </Project>

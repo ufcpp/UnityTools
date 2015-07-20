@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace SampleLibrary
 {
-    class TestHueBehaviour : MonoBehaviour
+    public class TextHueBehaviour : MonoBehaviour
     {
         /// <summary>
         /// 1フレームあたりどのくらい色相角が変わるか。

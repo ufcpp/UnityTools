@@ -44,7 +44,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestHueBehaviour.cs" />
+    <Compile Include="TextHueBehaviour.cs" />
     <Compile Include="TextBrightnessBehaviour.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

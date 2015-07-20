@@ -57,5 +57,14 @@ namespace ComponentForwarder
                 .Select(dllType => new ForwardingCompomentInfo(dllType, csTypes))
                 .ToArray();
         }
+
+        /// <summary>
+        /// コード生成する。
+        /// </summary>
+        /// <param name="csNamespace">生成する転送コンポーネントの名前空間。</param>
+        public void GenerateForwarder(string csNamespace)
+        {
+            CompomentGenerator.GenerateCodeFile(DllType, csNamespace);
+        }
     }
 }

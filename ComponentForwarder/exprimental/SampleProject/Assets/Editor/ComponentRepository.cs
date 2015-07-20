@@ -50,6 +50,9 @@ namespace ComponentForwarder
 
             var compontents = ForwardingCompomentInfo.New(_dllComponents, _csComponents);
             _table = compontents.ToDictionary(x => x.DllType);
+
+            var first = compontents.Select(x => x.ForwarderType).FirstOrDefault(x => x != null);
+            ForwarderNamespace = first == null ? "Namespace" : first.Namespace;
         }
 
         /// <summary>
@@ -73,10 +76,16 @@ namespace ComponentForwarder
         /// </summary>
         public void GenerateForwarder()
         {
-            foreach (var c in DllComponents.Where(c => c.IsChecked))
+            foreach (var c in DllComponents.Where(c => !c.HasForwarder && c.IsChecked))
             {
-                Debug.Log("todo: " + c.DllType.Name + "のコード生成");
+                c.GenerateForwarder(ForwarderNamespace);
             }
         }
+
+        /// <summary>
+        /// UI 用。
+        /// 転送コンポーネントをコード生成する際に使う名前空間。
+        /// </summary>
+        public string ForwarderNamespace { get; set; }
     }
 }

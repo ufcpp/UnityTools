@@ -31,6 +31,8 @@ namespace ComponentForwarder
         {
             foreach (var c in go.GetComponents<Component>())
             {
+                if (c == null) continue;
+
                 var ct = c.GetType();
                 var ci = repo.Find(ct);
                 if (ci != null)

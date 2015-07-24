@@ -60,7 +60,12 @@ namespace ComponentForwarder
             }
         }
 
-        public void Forward()
+        /// <summary>
+        /// 転送コンポーネントへの差し替え。
+        /// DLLコンポーネントを参照してるオブジェクトがあったら、そっちのcsコンポーネントへの差し替えもする。
+        /// </summary>
+        /// <param name="objects">全オブジェクト</param>
+        public void Forward(IEnumerable<ForwardingGameObjectInfo> objects)
         {
             foreach (var c in DllComponents.Where(x => x.HasForwarder))
             {
@@ -73,13 +78,26 @@ namespace ComponentForwarder
                 if (csComponent == null)
                     continue;
 
-                foreach (var f in dllType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(true).Any(a => a is SerializeField)))
+                //DLLコンポーネント中のシリアライズ フィールドの値を、csコンポーネントに移植。
+                foreach (var f in dllType.GetSerializeFieldInfo())
                 {
                     var value = f.GetValue(dllComponent);
                     f.SetValue(csComponent, value);
                 }
 
-                //todo: public get/set 持ちプロパティ
+                //DLLコンポーネントを参照しているやつをcsコンポーネントに差し替え
+                foreach (var obj in objects)
+                {
+                    foreach (var component in obj.Target.GetComponents<Component>())
+                    {
+                        foreach (var field in ForwardingFieldInfo.GetFields(component))
+                        {
+                            var v = field.Value;
+                            if (ReferenceEquals(v, dllComponent))
+                                field.Value = csComponent;
+                        }
+                    }
+                }
 
                 Object.DestroyImmediate(dllComponent);
             }
@@ -92,7 +110,7 @@ namespace ComponentForwarder
         {
             foreach (var obj in objects)
             {
-                obj.Forward();
+                obj.Forward(objects);
             }
         }
     }

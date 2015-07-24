@@ -8,7 +8,7 @@ namespace ComponentForwarder
     /// </summary>
     public class ForwardingCodeGeneratorWindow : EditorWindow
     {
-        [MenuItem("Tools/Component Forwarding/Generate Forwarding Code")]
+        [MenuItem("OC Tools/Component Forwarding/Generate Forwarding Code", priority = 0)]
         public static void ShowWindow()
         {
             var window = CreateInstance<ForwardingCodeGeneratorWindow>();
@@ -17,6 +17,7 @@ namespace ComponentForwarder
         }
 
         ComponentRepository _repository;
+        private Vector2 _currentSceneScroll;
 
         void OnProjectChange()
         {
@@ -42,7 +43,10 @@ namespace ComponentForwarder
                 _repository.GenerateForwarder();
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
                 _repository = null;
+                return;
             }
+
+            _currentSceneScroll = GUILayout.BeginScrollView(_currentSceneScroll);
 
             foreach (var c in _repository.DllComponents)
             {
@@ -55,6 +59,8 @@ namespace ComponentForwarder
                     GUILayout.Label("(済) " + c.DllType.Name);
                 }
             }
+
+            GUILayout.EndScrollView();
         }
     }
 }

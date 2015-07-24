@@ -88,4 +88,21 @@ namespace ComponentForwarder
         /// </summary>
         public string ForwarderNamespace { get; set; }
     }
+
+    public static class GameObjectExtensions
+    {
+        public static IEnumerable<GameObject> Descendants(this GameObject go)
+        {
+            yield return go;
+
+            var count = go.transform.childCount;
+            for (int i = 0; i < count; i++)
+            {
+                var child = go.transform.GetChild(i);
+
+                foreach (var x in Descendants(child.gameObject))
+                    yield return x;
+            }
+        }
+    }
 }

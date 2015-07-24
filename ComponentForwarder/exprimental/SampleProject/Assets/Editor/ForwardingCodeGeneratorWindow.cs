@@ -17,6 +17,7 @@ namespace ComponentForwarder
         }
 
         ComponentRepository _repository;
+        private Vector2 _currentSceneScroll;
 
         void OnProjectChange()
         {
@@ -44,6 +45,8 @@ namespace ComponentForwarder
                 _repository = null;
             }
 
+            _currentSceneScroll = GUILayout.BeginScrollView(_currentSceneScroll);
+
             foreach (var c in _repository.DllComponents)
             {
                 if (!c.HasForwarder)
@@ -55,6 +58,8 @@ namespace ComponentForwarder
                     GUILayout.Label("(済) " + c.DllType.Name);
                 }
             }
+
+            GUILayout.EndScrollView();
         }
     }
 }

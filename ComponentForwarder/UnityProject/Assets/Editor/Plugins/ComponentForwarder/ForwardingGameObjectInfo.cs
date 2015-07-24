@@ -70,6 +70,9 @@ namespace ComponentForwarder
                 var dllComponent = Target.GetComponent(dllType);
                 var csComponent = Target.AddComponent(csType);
 
+                if (csComponent == null)
+                    continue;
+
                 foreach (var f in dllType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(true).Any(a => a is SerializeField)))
                 {
                     var value = f.GetValue(dllComponent);

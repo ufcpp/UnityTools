@@ -33,7 +33,7 @@ try
         $pdb2mdb = $monoFolder + '\lib\mono\4.5\pdb2mdb.exe'
         $cli = $monoFolder + '\bin\cli.bat'
 
-        $null = ls *.dll | %{ . $cli $pdb2mdb $_.Name } 2>&1
+        $null = ls *.dll | %{ try { . $cli $pdb2mdb $_.Name } catch { } } 2>&1
     }
 }
 catch {}

@@ -10,7 +10,7 @@ namespace UnityProjectPostProcessor
         /// <summary>
         /// プロジェクトのパス。（常に絶対パス）
         /// </summary>
-        public string Path { get; private set; }
+        public string Path { get; }
 
         /// <summary>
         /// プロジェクトの種類。
@@ -20,7 +20,7 @@ namespace UnityProjectPostProcessor
         /// <summary>
         /// プロジェクトのGUID。
         /// </summary>
-        public Guid Guid { get; private set; }
+        public Guid Guid { get; }
 
         /// <summary>
         /// プロジェクト名。

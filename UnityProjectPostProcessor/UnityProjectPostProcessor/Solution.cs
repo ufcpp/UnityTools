@@ -14,7 +14,7 @@ namespace UnityProjectPostProcessor
         /// <summary>
         /// ソリューションのパス。（常に絶対パス）
         /// </summary>
-        public string Path { get; private set; }
+        public string Path { get; }
 
         /// <summary>
         /// ソリューションファイルの内容。

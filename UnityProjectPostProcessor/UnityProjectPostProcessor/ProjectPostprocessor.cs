@@ -29,7 +29,11 @@ namespace UnityProjectPostProcessor
 
             var path = Path.Combine(Application.dataPath, @"UnityVS\Editor\SyntaxTree.VisualStudio.Unity.Bridge.dll");
 
-            if (!File.Exists(path)) return;
+            if (!File.Exists(path))
+            {
+                Debug.Log($"ProjectPostprocessor: path '{path}' does not exist");
+                return;
+            }
 
             var asm = Assembly.LoadFile(path);
             var projectFilesGeneratorType = asm.GetType("SyntaxTree.VisualStudio.Unity.Bridge.ProjectFilesGenerator");
@@ -55,6 +59,11 @@ namespace UnityProjectPostProcessor
                 solutionFileGenerationField.SetValue(null, null);
                 projectFileGenerationField.SetValue(null, null);
             }
+            else
+            {
+                Debug.Log("ProjectPostprocessor: type 'SyntaxTree.VisualStudio.Unity.Bridge.ProjectFilesGenerator' does not exist");
+
+            }
         }
 
         private string OnGeneratedSolutionFile(string fileName, string fileContent)
@@ -71,11 +80,22 @@ namespace UnityProjectPostProcessor
 
             var csproj = new CSharpProject(Path.Combine(ProjectRoot, fileName), fileContent);
             UpdateReferences(csproj);
+            SpecifyLangVersion(csproj);
+
             return csproj.Content;
+        }
+
+        private static void SpecifyLangVersion(CSharpProject csproj)
+        {
+            var unityVersion = Application.unityVersion;
+            var csharpVersion = unityVersion.CompareTo("5.5") >= 0 ? default(int?) : 4;
+            csproj.SpecifyLangVersion(csharpVersion);
         }
 
         private void UpdateReferences(CSharpProject csproj)
         {
+            var log = new System.Text.StringBuilder();
+
             // Boo.Lang は無条件で消す。
             csproj.RemoveReference("Boo.Lang");
 
@@ -84,6 +104,7 @@ namespace UnityProjectPostProcessor
 
             foreach (var refProj in GameProject.GetAllCSharpProjectReferences())
             {
+                log.AppendLine($"updare ref {refProj.Name}");
                 // Game プロジェクト関連のアセンブリ参照削除。
                 csproj.RemoveReference(refProj.Name);
                 // Game プロジェクト関連の参照を追加。
@@ -92,9 +113,13 @@ namespace UnityProjectPostProcessor
 
             foreach (var analyser in GameProject.AnalyzerReferences)
             {
+                log.AppendLine($"add analyzer {analyser}");
                 // Game プロジェクト関連のアナライザーを追加。
                 csproj.AddAnalyzer(analyser);
             }
+
+            Debug.Log(@"ProjectPostprocessor: UpdateReferences
+" + log.ToString());
         }
 
         /// <summary>
@@ -107,16 +132,23 @@ namespace UnityProjectPostProcessor
         /// <returns></returns>
         private void AddGameProject(Solution solution)
         {
+            var log = new System.Text.StringBuilder();
+
             solution.AddProject(GameProject);
             foreach (var p in GameProject.GetAllCSharpProjectReferences())
             {
+                log.AppendLine($"add project {p.Name}");
                 solution.AddProject(p);
             }
 
             foreach (var p in GameProject.GetAllSharedProjectReferences())
             {
+                log.AppendLine($"add project {p.Name}");
                 solution.AddProject(p);
             }
+
+            Debug.Log(@"ProjectPostprocessor: AddProjects
+" + log.ToString());
         }
 
         /// <summary>Record Constructor</summary>

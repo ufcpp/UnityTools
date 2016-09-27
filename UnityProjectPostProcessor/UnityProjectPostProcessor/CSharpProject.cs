@@ -98,20 +98,25 @@ namespace UnityProjectPostProcessor
         private static readonly Regex regImport = new Regex(@"\<Import Project=""(?<path>.*?)\.projitems"" Label=""Shared"".*/\>", RegexOptions.Compiled);
         private static readonly Regex regAnalyzer = new Regex(@"\s*\<Analyzer Include=""(?<path>.*?)"" /\>", RegexOptions.Compiled);
         private static readonly Regex regProjectClose = new Regex(@"\</Project\>", RegexOptions.Compiled);
-        private static readonly Regex regLangVersion = new Regex(@"\<LangVersion\>.*?\</LangVersion\>", RegexOptions.Compiled);
+        private static readonly Regex regLangVersion = new Regex(@"\<LangVersion.*?\</LangVersion\>", RegexOptions.Compiled);
         private static readonly IEnumerable<Regex> regReferenceList = new[]
         {
             regReference,
             regReferenceHintPath,
         };
 
-        public void SpecifyLangVersion(int version)
+        /// <summary>
+        /// バージョン指定。
+        /// </summary>
+        /// <param name="version">バージョン。nullだったら langversion = default。</param>
+        public void SpecifyLangVersion(int? version)
         {
+            var versionString = version == null ? "default" : version.Value.ToString();
             var tags = regLangVersion.Matches(Content).Cast<Match>().Select(x => x.Value).Distinct().ToArray();
 
             if (tags.Any())
             {
-                var versionTag = $"<LangVersion>{version}</LangVersion>";
+                var versionTag = $"<LangVersion>{versionString}</LangVersion>";
                 foreach (var t in tags)
                 {
                     Content = Content.Replace(t, versionTag);
@@ -123,7 +128,7 @@ namespace UnityProjectPostProcessor
                 const string leadingTag = "<AllowUnsafeBlocks>false</AllowUnsafeBlocks>";
 
                 var versionTag = leadingTag + $@"
-    <LangVersion>{version}</LangVersion>";
+    <LangVersion>{versionString}</LangVersion>";
 
                 Content = Content.Replace(leadingTag, versionTag);
             }

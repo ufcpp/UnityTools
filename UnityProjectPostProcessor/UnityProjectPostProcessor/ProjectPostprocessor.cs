@@ -76,7 +76,7 @@ namespace UnityProjectPostProcessor
         private string OnGeneratedProjectFile(string fileName, string fileContent)
         {
             // Editor, Plugins プロジェクトは無視する。
-            if (!fileName.EndsWith("CSharp.csproj")) { return fileContent; }
+            if (fileName.Contains(".Editor.")) { return fileContent; }
 
             var csproj = new CSharpProject(Path.Combine(ProjectRoot, fileName), fileContent);
             UpdateReferences(csproj);

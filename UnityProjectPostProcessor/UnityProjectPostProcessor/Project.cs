@@ -37,7 +37,16 @@ namespace UnityProjectPostProcessor
         {
             Path = System.IO.Path.GetFullPath(path);
             Content = content;
-            Guid = GetProjectGuid(Content);
+
+            try
+            {
+                // GUID が入ってないことがあるので、その場合は例外を無視。
+                Guid = GetProjectGuid(Content);
+            }
+            catch
+            {
+                Guid = Guid.NewGuid();
+            }
         }
 
         /// <summary>
@@ -63,8 +72,7 @@ namespace UnityProjectPostProcessor
         /// <returns>プロジェクト。</returns>
         internal static T GetProject<T>(string path, Func<string, T> creator) where T : Project
         {
-            Project project;
-            if (!_projectChace.TryGetValue(path, out project))
+            if (!_projectChace.TryGetValue(path, out var project))
             {
                 project = creator(path);
                 _projectChace.Add(path, project);

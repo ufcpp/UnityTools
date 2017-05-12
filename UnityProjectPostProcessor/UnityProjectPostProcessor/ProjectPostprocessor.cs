@@ -21,7 +21,7 @@ namespace UnityProjectPostProcessor
         /// <summary>
         /// Game.csproj
         /// </summary>
-        private CSharpProject GameProject { get; }
+        private CSharpProject RootProject { get; }
 
         public void Generate()
         {
@@ -75,11 +75,16 @@ namespace UnityProjectPostProcessor
 
         private string OnGeneratedProjectFile(string fileName, string fileContent)
         {
-            // Editor, Plugins プロジェクトは無視する。
-            if (fileName.Contains(".Editor.")) { return fileContent; }
-
             var csproj = new CSharpProject(Path.Combine(ProjectRoot, fileName), fileContent);
-            UpdateReferences(csproj);
+
+            if (!fileName.Contains(".Editor."))
+            {
+                // Editor プロジェクトの場合、DLL参照→プロジェクト参照のつなぎ変えまではやらない
+                // (<LangVersion>4</LangVersion> の書き換えとかだけする。)
+                UpdateReferences(csproj);
+            }
+
+            csproj.RemoveTargetFrameworkProfile();
             SpecifyLangVersion(csproj);
 
             return csproj.Content;
@@ -99,10 +104,9 @@ namespace UnityProjectPostProcessor
             // Boo.Lang は無条件で消す。
             csproj.RemoveReference("Boo.Lang");
 
-            csproj.RemoveReference(GameProject.Name);
-            csproj.AddProjectReference(GameProject);
+            csproj.RemoveReference(RootProject.Name);
 
-            foreach (var refProj in GameProject.GetAllCSharpProjectReferences())
+            foreach (var refProj in RootProject.GetAllCSharpProjectReferences())
             {
                 log.AppendLine($"updare ref {refProj.Name}");
                 // Game プロジェクト関連のアセンブリ参照削除。
@@ -111,7 +115,7 @@ namespace UnityProjectPostProcessor
                 csproj.AddProjectReference(refProj);
             }
 
-            foreach (var analyser in GameProject.AnalyzerReferences)
+            foreach (var analyser in RootProject.AnalyzerReferences)
             {
                 log.AppendLine($"add analyzer {analyser}");
                 // Game プロジェクト関連のアナライザーを追加。
@@ -134,14 +138,14 @@ namespace UnityProjectPostProcessor
         {
             var log = new System.Text.StringBuilder();
 
-            solution.AddProject(GameProject);
-            foreach (var p in GameProject.GetAllCSharpProjectReferences())
+            foreach (var p in RootProject.GetAllCSharpProjectReferences())
             {
+                if (p == RootProject) continue;
                 log.AppendLine($"add project {p.Name}");
                 solution.AddProject(p);
             }
 
-            foreach (var p in GameProject.GetAllSharedProjectReferences())
+            foreach (var p in RootProject.GetAllSharedProjectReferences())
             {
                 log.AppendLine($"add project {p.Name}");
                 solution.AddProject(p);
@@ -152,10 +156,10 @@ namespace UnityProjectPostProcessor
         }
 
         /// <summary>Record Constructor</summary>
-        /// <param name="gameProject"><see cref="GameProject"/></param>
+        /// <param name="gameProject"><see cref="RootProject"/></param>
         public ProjectPostprocessor(CSharpProject gameProject = default(CSharpProject))
         {
-            GameProject = gameProject;
+            RootProject = gameProject;
         }
     }
 

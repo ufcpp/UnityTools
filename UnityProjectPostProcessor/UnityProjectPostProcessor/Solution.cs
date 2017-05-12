@@ -44,10 +44,12 @@ namespace UnityProjectPostProcessor
 
         private IEnumerable<CSharpProject> GetCSharpProjects()
         {
-            var regex = new Regex("Project\\(\"\\{.*\\}\"\\) = \".*\",.*\"(?<path>.*?)\\.csproj\",.*\"\\{.*\\}");
-            return regex.Matches(Content).Cast<Match>()
-                .Select(x => x.Groups["path"])
-                .Where(x => x.Success).Select(x => Project.GetProject<CSharpProject>(x.Value + ".csproj", path => new CSharpProject(path)));
+            var regex = new Regex("Project\\(\"\\{.*\\}\"\\) = \".*\",.*\"(?<path>.*?)\\.csproj\",.*\"\\{(?<guid>.*)\\}");
+            return
+                from Match m in regex.Matches(Content).Cast<Match>()
+                where m.Success
+                let path = m.Groups["path"].Value + ".csproj"
+                select Project.GetProject(path, x => new CSharpProject(x));
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace UnityProjectPostProcessor
         /// </summary>
         public void AddProject(Project project)
         {
-            if (!HasProject(project.Guid))
+            if (!Content.Contains(project.Path))
             {
                 var typeGuid = project.TypeGuid;
                 var endProject = "EndProject";
@@ -67,18 +69,6 @@ Project(""{{{0}}}"") = ""{1}"", ""{2}"", ""{{{3}}}""
 EndProject"
                 , typeGuid, project.Name, project.Path, project.Guid.ToString().ToUpper()));
             }
-        }
-
-        /// <summary>
-        /// ソリューションに指定したプロジェクトが追加されているかどうか。
-        /// </summary>
-        /// <param name="guid">プロジェクトGUID</param>
-        /// <returns>ソリューションがプロジェクトを含んでいれば true。</returns>
-        private bool HasProject(Guid guid)
-        {
-            var pattern = string.Format("Project\\(\"\\{{.*\\}}\"\\) = .*,.*,.*\"\\{{{0}\\}}\"", guid.ToString().ToUpper());
-            var regex = new Regex(pattern);
-            return regex.Match(Content).Success;
         }
     }
 }

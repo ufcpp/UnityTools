@@ -99,11 +99,29 @@ namespace UnityProjectPostProcessor
         private static readonly Regex regAnalyzer = new Regex(@"\s*\<Analyzer Include=""(?<path>.*?)"" /\>", RegexOptions.Compiled);
         private static readonly Regex regProjectClose = new Regex(@"\</Project\>", RegexOptions.Compiled);
         private static readonly Regex regLangVersion = new Regex(@"\<LangVersion.*?\</LangVersion\>", RegexOptions.Compiled);
+        private static readonly Regex regTargetFrameworkProfile = new Regex(@"\<TargetFrameworkProfile.*?\</TargetFrameworkProfile\>", RegexOptions.Compiled);
         private static readonly IEnumerable<Regex> regReferenceList = new[]
         {
             regReference,
             regReferenceHintPath,
         };
+
+        /// <summary>
+        /// <![CDATA[
+        /// <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+        /// ]]>
+        /// タグがあると、新形式 csproj (<![CDATA[ <Project Sdk="Microsoft.NET.Sdk"> ]]>が入ってるやつ)との混在でうまくビルドが出来なくなるので、消す。
+        /// </summary>
+        /// <remarks>
+        /// 副作用として、「.NET 3.5には含まれてるけどもUnityでは使えないはずのクラスを触れてしまう」という問題がなくはない。
+        /// とはいえ、それはVisual Studio内だけの問題で、Unity上でのビルドでわかるし、
+        /// その条件に当てはまるクラス自体が少ないはずなので、
+        /// 大した問題ではないはず。
+        /// </remarks>
+        public void RemoveTargetFrameworkProfile()
+        {
+            Content = regTargetFrameworkProfile.Replace(Content, "");
+        }
 
         /// <summary>
         /// バージョン指定。

@@ -87,7 +87,7 @@ namespace UnityProjectPostProcessor
         /// <param name="content">プロジェクトの内容（*.csproj の XML テキスト）。</param>
         public CSharpProject(string path, string content) : base(path, content)
         {
-            Name = GetAssemblyName(Content);
+            Name = GetAssemblyName(path, content);
         }
 
         private static readonly Regex regProjectReferenceClose = new Regex(@"\</ProjectReference\>[\s]*\</ItemGroup\>", RegexOptions.Compiled);
@@ -236,10 +236,11 @@ namespace UnityProjectPostProcessor
         //    throw new NotImplementedException();
         //}
 
-        private static string GetAssemblyName(string proj)
+        private static string GetAssemblyName(string path, string proj)
         {
-            var name = regAssemblyName.Match(proj).Groups["name"].Value;
-            return name;
+            var m = regAssemblyName.Match(proj).Groups["name"];
+            if (m.Success) return m.Value;
+            return System.IO.Path.GetFileNameWithoutExtension(path);
         }
 
         private IEnumerable<string> GetAssemblyReferences(string proj)

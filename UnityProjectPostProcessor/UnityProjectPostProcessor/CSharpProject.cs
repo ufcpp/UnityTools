@@ -73,7 +73,7 @@ namespace UnityProjectPostProcessor
         /// <see cref="Project.TypeGuid"/>
         /// </summary>
         public override Guid TypeGuid => new Guid("FAE04EC0-301F-11D3-BF4B-00C04F79EFBC");
-        
+
         /// <summary>
         /// コンストラクタ。
         /// </summary>
@@ -94,10 +94,10 @@ namespace UnityProjectPostProcessor
         private static readonly Regex regAssemblyName = new Regex(@"\<AssemblyName\>(?<name>.*?)\</AssemblyName\>", RegexOptions.Compiled);
         private static readonly Regex regReference = new Regex(@"\<Reference Include=""(?<asm>.*?)"" /\>", RegexOptions.Compiled);
         private static readonly Regex regReferenceHintPath = new Regex(@"\<Reference Include=""(?<asm>.*?)""\>[\s]*\<HintPath\>.*\</HintPath\>[\s]*\</Reference\>", RegexOptions.Compiled);
-        private static readonly Regex regProjectReference = new Regex(@"\<ProjectReference Include=""(?<path>.*?)\.csproj""\>", RegexOptions.Compiled);
+        private static readonly Regex regProjectReference = new Regex(@"\<ProjectReference Include=""(?<path>.*?)\.csproj""", RegexOptions.Compiled);
         private static readonly Regex regImport = new Regex(@"\<Import Project=""(?<path>.*?)\.projitems"" Label=""Shared"".*/\>", RegexOptions.Compiled);
         private static readonly Regex regAnalyzer = new Regex(@"\s*\<Analyzer Include=""(?<path>.*?)"" /\>", RegexOptions.Compiled);
-        private static readonly Regex regProjectClose = new Regex(@"\</Project\>", RegexOptions.Compiled);
+        //private static readonly Regex regProjectClose = new Regex(@"\</Project\>", RegexOptions.Compiled);
         private static readonly Regex regLangVersion = new Regex(@"\<LangVersion.*?\</LangVersion\>", RegexOptions.Compiled);
         private static readonly Regex regTargetFrameworkProfile = new Regex(@"\<TargetFrameworkProfile.*?\</TargetFrameworkProfile\>", RegexOptions.Compiled);
         private static readonly IEnumerable<Regex> regReferenceList = new[]

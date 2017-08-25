@@ -9,7 +9,7 @@ foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
 {
     $destinationFiles = [IO.Path]::Combine($destination, '*.' + $ext)
     $sourceFiles = [IO.Path]::Combine($source, $pattern + '.' + $ext)
-    [string[]] $excludeFiles = $excludes | %{ '*' + $_ + '.*'}
+    [string[]] $excludeFiles = $excludes | %{ $_ + '.*'}
 
     if (Test-Path $destinationFiles) { rm $destinationFiles }
 

@@ -1,5 +1,0 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <PostBuildEvent><![CDATA[pushd "$(NuGetPackageRoot)CopyDllsAfterBuild\2.1.1\tools\" & postbuild "$(ProjectDir)" "$(TargetDir)" & popd]]></PostBuildEvent>
-  </PropertyGroup>
-</Project>

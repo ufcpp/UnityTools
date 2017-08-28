@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PostBuildEvent><![CDATA[pushd "$(MSBuildThisFileDirectory)..\tools\" & postbuild "$(ProjectDir)" "$(TargetDir)" & popd]]></PostBuildEvent>
+  </PropertyGroup>
+</Project>

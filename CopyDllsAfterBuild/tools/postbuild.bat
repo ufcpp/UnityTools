@@ -1,3 +1,4 @@
+cd /d %~dp0
 set ProjectDir=%1
 set TargetDir=%2
 

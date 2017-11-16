@@ -1,5 +1,7 @@
 param([string] $source, [string] $destination, [string] $pattern, [string[]] $excludes)
 
+'Copy DLLs'
+
 if (-not (Test-Path $destination))
 {
     mkdir $destination
@@ -20,22 +22,32 @@ foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
 
 pushd $destination
 
-try
+if (Test-XABuildPath)
 {
-    if (Test-XABuildPath)
-    {
-        ls *.dll | %{ . Convert-Pdb2Mdb $_.FullName }
+    ls *.dll | %{ try {
+        $dll = $_.FullName
+        $pdb = $dll -replace "\.dll", ".pdb"
+        if (Test-Path $pdb)
+        {
+            . Convert-Pdb2Mdb $dll
+        }
     }
-    else
-    {
-        $unityPath = Get-Item 'HKCU:\Software\Unity Technologies\Installer\Unity' | Get-ItemProperty -Name 'Location x64' | %{ $_.'Location x64' }
-        $monoFolder = $unityPath + '\Editor\Data\MonoBleedingEdge'
-        $pdb2mdb = $monoFolder + '\lib\mono\4.5\pdb2mdb.exe'
-        $cli = $monoFolder + '\bin\cli.bat'
-
-        $null = ls *.dll | %{ try { . $cli $pdb2mdb $_.Name } catch { } } 2>&1
-    }
+    catch {
+@"
+pdb2mdb error
+    $dll
+    $($_.Exception.Message)
+"@
+    }}
 }
-catch {}
+else
+{
+    $unityPath = Get-Item 'HKCU:\Software\Unity Technologies\Installer\Unity' | Get-ItemProperty -Name 'Location x64' | %{ $_.'Location x64' }
+    $monoFolder = $unityPath + '\Editor\Data\MonoBleedingEdge'
+    $pdb2mdb = $monoFolder + '\lib\mono\4.5\pdb2mdb.exe'
+    $cli = $monoFolder + '\bin\cli.bat'
+
+    $null = ls *.dll | %{ try { . $cli $pdb2mdb $_.Name } catch { } } 2>&1
+}
 
 popd

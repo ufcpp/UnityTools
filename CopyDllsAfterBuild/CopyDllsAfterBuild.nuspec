@@ -2,23 +2,23 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CopyDllsAfterBuild</id>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <title>Copy Dlls after build</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
-      <licenseUrl>https://github.com/ufcpp/UnityTools/blob/master/LICENSE</licenseUrl>
-      <projectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</projectUrl>
-      <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/ufcpp/UnityTools/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Copy DLLs to a external folder and generate .mdb files on post build.</description>
-    <releaseNotes>Conform to the new csproj format.</releaseNotes>
+    <releaseNotes>Support VS 2017 (15).</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />
     </frameworkAssemblies>
   </metadata>
   <files>
-      <file src="build\*" target="build\" />
-      <file src="content\*.json" target="content\" />
-      <file src="tools\*" target="tools\" />
+    <file src="build\*" target="build\" />
+    <file src="content\*.json" target="content\" />
+    <file src="tools\*" target="tools\" />
   </files>
 </package>

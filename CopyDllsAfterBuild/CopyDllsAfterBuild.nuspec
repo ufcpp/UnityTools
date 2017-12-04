@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CopyDllsAfterBuild</id>
-    <version>3.1.0</version>
+    <version>3.1.2</version>
     <title>Copy Dlls after build</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Copy DLLs to a external folder and generate .mdb files on post build.</description>
-    <releaseNotes>Support VS 2017 (15).</releaseNotes>
+    <releaseNotes>Fixed bug.</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />

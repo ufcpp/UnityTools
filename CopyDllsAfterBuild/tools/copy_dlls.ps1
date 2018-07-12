@@ -17,7 +17,7 @@ foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
     for ($i = 0; $i -lt $len; $i++)
     {
         # `$` means end of a file name excluding the extension.
-        if ($excludes[$i].EndWith("$"))
+        if ($excludes[$i].EndsWith("$"))
         {
             $excludeFiles[$i] = $excludes[$i].Substring(0, $excludes[$i].Length - 1) + '.' + $ext
         }

@@ -11,7 +11,21 @@ foreach ($ext in 'dll', 'pdb', 'xml', 'dll.mdb')
 {
     $destinationFiles = [IO.Path]::Combine($destination, '*.' + $ext)
     $sourceFiles = [IO.Path]::Combine($source, $pattern + '.' + $ext)
-    [string[]] $excludeFiles = $excludes | %{ $_ + '.*'}
+
+    $excludeFiles = $excludes
+    $len = $excludes.Length
+    for ($i = 0; $i -lt $len; $i++)
+    {
+        # `$` means end of a file name excluding the extension.
+        if ($excludes[$i].EndWith("$"))
+        {
+            $excludeFiles[$i] = $excludes[$i].Substring(0, $excludes[$i].Length - 1) + '.' + $ext
+        }
+        else
+        {
+            $excludeFiles[$i] = $excludes[$i] + ".*"
+        }
+    }
 
     if (Test-Path $destinationFiles) { rm $destinationFiles }
 

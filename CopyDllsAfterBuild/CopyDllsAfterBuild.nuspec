@@ -2,15 +2,15 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CopyDllsAfterBuild</id>
-    <version>3.1.4</version>
+    <version>4.0.0</version>
     <title>Copy Dlls after build</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
     <licenseUrl>https://github.com/ufcpp/UnityTools/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Copy DLLs to a external folder and generate .mdb files on post build.</description>
-    <releaseNotes>Fixed bug.</releaseNotes>
+    <description>Copy DLLs/PDBs to a external folder on post build.</description>
+    <releaseNotes>Removed pdb2mdb support.</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />

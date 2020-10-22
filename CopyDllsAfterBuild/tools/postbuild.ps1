@@ -11,6 +11,7 @@ $dllPath = [IO.Path]::Combine($ProjectDir, $settings.destination)
 [string[]] $excludes = $settings.excludes
 
 $pattern = $settings.pattern
+if ($null -eq $pattern) { $pattern = '*' }
 if ($pattern -eq $null) { $pattern = '*' }
 
 . ./copy_dlls.ps1 $TargetDir $dllPath $pattern $excludes

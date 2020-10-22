@@ -12,6 +12,19 @@ $dllPath = [IO.Path]::Combine($ProjectDir, $settings.destination)
 
 $pattern = $settings.pattern
 if ($null -eq $pattern) { $pattern = '*' }
-if ($pattern -eq $null) { $pattern = '*' }
+
+$excludesFromFolder = @()
+
+foreach ($excludeFolder in $settings.exclude_folders) {
+    foreach ($excludeFile in Get-ChildItem ($ProjectDir + $excludeFolder)) {
+        if (-not ([string]$excludeFile).EndsWith(('meta'))) {
+            $excludesFromFolder += [IO.Path]::GetFileNameWithoutExtension($excludeFile.Name)
+        }
+    }
+}
+
+foreach ($excludeFile in ($excludesFromFolder | Get-Unique)) {
+    $excludes += $excludeFile
+}
 
 . ./copy_dlls.ps1 $TargetDir $dllPath $pattern $excludes

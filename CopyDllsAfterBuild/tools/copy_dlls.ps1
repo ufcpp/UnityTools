@@ -12,8 +12,8 @@ foreach ($ext in 'dll', 'pdb', 'xml')
     $destinationFiles = [IO.Path]::Combine($destination, '*.' + $ext)
     $sourceFiles = [IO.Path]::Combine($source, $pattern + '.' + $ext)
 
-    $excludeFiles = $excludes
     $len = $excludes.Length
+    $excludeFiles = [string[]]::new($len)
     for ($i = 0; $i -lt $len; $i++)
     {
         # `$` means end of a file name excluding the extension.
@@ -27,7 +27,7 @@ foreach ($ext in 'dll', 'pdb', 'xml')
         }
     }
 
-    if (Test-Path $destinationFiles) { rm $destinationFiles }
+    if (Test-Path $destinationFiles) { Remove-Item $destinationFiles }
 
     Copy-Item $sourceFiles $destination -Exclude $excludeFiles
 }

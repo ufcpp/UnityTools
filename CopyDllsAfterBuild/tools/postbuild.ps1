@@ -18,7 +18,7 @@ $excludesFromFolder = @()
 foreach ($excludeFolder in $settings.exclude_folders) {
     foreach ($excludeFile in Get-ChildItem ($ProjectDir + $excludeFolder)) {
         if (-not ([string]$excludeFile).EndsWith(('meta'))) {
-            $excludesFromFolder += [IO.Path]::GetFileNameWithoutExtension($excludeFile.Name)
+            $excludesFromFolder += [IO.Path]::GetFileNameWithoutExtension($excludeFile.Name) + '$' # exact match instead of prefix match
         }
     }
 }

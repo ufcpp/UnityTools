@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>CopyDllsAfterBuild</id>
-    <version>4.1.0</version>
+    <version>4.2.0</version>
     <title>Copy Dlls after build</title>
     <authors>Nobuyuki Iwanaga</authors>
     <owners>Nobuyuki Iwanaga</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Copy DLLs/PDBs to a external folder on post build.</description>
-    <releaseNotes>Add support for exclude_folders</releaseNotes>
+    <releaseNotes>small fix</releaseNotes>
     <copyright>Nobuyuki Iwanaga</copyright>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />

@@ -33,13 +33,16 @@ namespace CopyDllsAfterBuild
         private static readonly LogLevel headerLogLevel = LogLevel.Debug;
         private static readonly string[] logHeaders = new[]
         {
-            "[trac]",
-            "[debg]",
-            "[info]",
-            "[warn]",
-            "[erro]",
-            "[crit]",
+            "[trac] ",
+            "[debg] ",
+            "[info] ",
+            "[warn] ",
+            "[erro] ",
+            "[crit] ",
         };
+        /// <summary>
+        /// Singleton instance of <see cref="Logger">
+        /// </summary>
         public static Logger Instance
         {
             get
@@ -54,17 +57,14 @@ namespace CopyDllsAfterBuild
         private static Logger? _instance = null;
 
         private readonly LogLevel _logLevel;
-        private Logger(LogLevel logLevel)
-        {
-            _logLevel = logLevel;
-        }
+        private Logger(LogLevel logLevel) => _logLevel = logLevel;
 
         private static Logger GetLogger()
         {
             // You can change LogLevel via EnvironmentVariables
             var logLevelEnv = Environment.GetEnvironmentVariable("COPYDLLS_LOGLEVEL");
-            var logLevel = logLevelEnv != null && Enum.TryParse<LogLevel>(logLevelEnv, out var parsed)
-                ? parsed
+            var logLevel = logLevelEnv != null && Enum.TryParse<LogLevel>(logLevelEnv, out var level)
+                ? level
                 : defaultLogLevel;
             return new Logger(logLevel);
         }
@@ -72,30 +72,12 @@ namespace CopyDllsAfterBuild
         private bool IsEnabled(LogLevel level) => level >= _logLevel;
         private string GetPrefix(LogLevel logLevel) => headerLogLevel >= _logLevel ? $"{logHeaders[(int)logLevel]}" : "";
 
-        public void LogTrace(string message)
-        {
-            Log(LogLevel.Trace, message);
-        }
-        public void LogDebug(string message)
-        {
-            Log(LogLevel.Debug, message);
-        }
-        public void LogInformation(string message)
-        {
-            Log(LogLevel.Information, message);
-        }
-        public void LogWarning(string message)
-        {
-            Log(LogLevel.Warning, message);
-        }
-        public void LogError(string message)
-        {
-            Log(LogLevel.Error, message);
-        }
-        public void LogCritical(string message)
-        {
-            Log(LogLevel.Trace, message);
-        }
+        public void LogTrace(string message) => Log(LogLevel.Trace, message);
+        public void LogDebug(string message) => Log(LogLevel.Debug, message);
+        public void LogInformation(string message) => Log(LogLevel.Information, message);
+        public void LogWarning(string message) => Log(LogLevel.Warning, message);
+        public void LogError(string message) => Log(LogLevel.Error, message);
+        public void LogCritical(string message) => Log(LogLevel.Trace, message);
         public void Log(LogLevel logLevel, string message)
         {
             // no message formatter or gc friendly, just control level is enough.

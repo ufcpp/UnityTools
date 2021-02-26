@@ -1,5 +1,5 @@
 {
-  "destination": "../../project/Assets/Dlls",
+  "destination": "../../../project/Assets/Dlls",
   "pattern": "*",
   "excludes": [ "UnityEngine", "UnityEditor" ],
   "exclude_folders": ["excludes"]

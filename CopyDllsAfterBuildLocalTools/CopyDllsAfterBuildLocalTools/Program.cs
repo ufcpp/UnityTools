@@ -7,10 +7,7 @@ namespace CopyDllsAfterBuild
     partial class Program
     {
         private static readonly ILogger logger = Logger.Instance;
-        static void Main(string[] args)
-        {
-            CoconaLiteApp.Run<Program>(args);
-        }
+        static void Main(string[] args) => CoconaLiteApp.Run<Program>(args);
 
         /// <summary>
         /// Run CopyDlls operation.
@@ -27,8 +24,8 @@ namespace CopyDllsAfterBuild
 
                 var build = new PostBuild(trimedProjectDir);
                 var settings = build.GetSettings(settingFile);
-                var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
-                var dllPath = Path.Combine(trimedProjectDir, settings.Destination);
+                var excludes = build.GetExcludes(settings.Excludes!, settings.ExcludeFolders!);
+                var dllPath = Path.Combine(trimedProjectDir, settings.Destination!);
 
                 build.CopyDlls(trimedTargetdir, dllPath, settings.Pattern, excludes);
             }

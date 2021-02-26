@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace CopyDllsAfterBuild
 {
-    class PostBuild
+    public class PostBuild
     {
         private static readonly string[] unityPluginExtensions = new[] { "dll", "pdb", "xml" };
         private static readonly ILogger logger = Logger.Instance;
 
         private readonly string _projectDir;
 
-        public PostBuild(string projectDir)
-        {
-            _projectDir = projectDir;
-        }
+        public PostBuild(string projectDir) => _projectDir = projectDir;
 
         public CopySettings GetSettings(string settingsFile)
         {
@@ -23,10 +21,16 @@ namespace CopyDllsAfterBuild
             if (File.Exists(settingsPath))
             {
                 logger.LogDebug($"Setting file {settingsFile} found.");
-                return CopySettings.LoadJsonFile(settingsPath);
+                logger.LogDebug($"Loading JSON file from {settingsPath}");
+                if (!File.Exists(settingsPath))
+                    throw new FileNotFoundException($"Settings file not found from path specified. {settingsPath}.");
+
+                var json = File.ReadAllText(settingsPath, Encoding.UTF8);
+                return CopySettings.LoadJson(json);
             }
             else
             {
+                // note: should throw?
                 logger.LogDebug("Setting file {settingsFile} not found. Use default settings.");
                 return new CopySettings();
             }
@@ -43,12 +47,13 @@ namespace CopyDllsAfterBuild
             var excludesFromFolder = new List<string>();
             foreach (var excludeFolder in excludeFolders)
             {
-                if (Directory.Exists(excludeFolder))
+                var excludePath = Path.Combine(_projectDir, excludeFolder);
+                if (Directory.Exists(excludePath))
                 {
-                    logger.LogDebug($"Enumerate exclude files from exclude_folders. folder: {excludeFolder}");
+                    logger.LogDebug($"Enumerate exclude files from exclude_folders. folder: {excludePath}");
 
                     // top directory only
-                    foreach (var excludeFile in Directory.EnumerateFiles(excludeFolder))
+                    foreach (var excludeFile in Directory.EnumerateFiles(excludePath))
                     {
                         // exlude unity .meta extension file
                         if (Path.GetExtension(excludeFile) != ".meta")

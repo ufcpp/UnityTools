@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <RollForward>LatestMajor</RollForward>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>CopyDllsAfterBuild</PackageId>
+    <ToolCommandName>dotnet-copydllsafterbuild</ToolCommandName>
+    <Authors>Nobuyuki Iwanaga</Authors>
+    <Description>Copy DLLs/PDBs to a external folder on post build.</Description>
+    <Copyright>Nobuyuki Iwanaga</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Cocona.Lite" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="build\*">
+      <Pack>True</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
+    <None Include="content\*">
+      <Pack>True</Pack>
+      <PackagePath>content</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

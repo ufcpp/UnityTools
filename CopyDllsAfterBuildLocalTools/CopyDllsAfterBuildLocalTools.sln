@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopyDllsAfterBuild", "CopyDllsAfterBuild\CopyDllsAfterBuild.csproj", "{B5A92A11-7CEA-4965-8365-F86560837B4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CopyDllsAfterBuildLocalTools", "CopyDllsAfterBuildLocalTools\CopyDllsAfterBuildLocalTools.csproj", "{B5A92A11-7CEA-4965-8365-F86560837B4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyDllsAfterBuildUnitTest", "CopyDllsAfterBuildUnitTest\CopyDllsAfterBuildUnitTest.csproj", "{1568F20B-F53B-4921-9F54-9223F929B2D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyDllsAfterBuildLocalToolsUnitTest", "CopyDllsAfterBuildLocalToolsUnitTest\CopyDllsAfterBuildLocalToolsUnitTest.csproj", "{1568F20B-F53B-4921-9F54-9223F929B2D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

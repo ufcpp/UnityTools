@@ -45,12 +45,16 @@ namespace CopyDllsAfterBuild
             {
                 if (Directory.Exists(excludeFolder))
                 {
+                    logger.LogDebug($"Enumerate exclude files from exclude_folders. folder: {excludeFolder}");
+
                     // top directory only
                     foreach (var excludeFile in Directory.EnumerateFiles(excludeFolder))
                     {
                         // exlude unity .meta extension file
                         if (Path.GetExtension(excludeFile) != ".meta")
                         {
+                            logger.LogTrace($"Exclude file found from exclude_folders. file: {excludeFile}");
+
                             // $ to use exact match instead of prefix match.
                             var fileName = Path.GetFileNameWithoutExtension(excludeFile) + "$";
                             excludesFromFolder.Add(fileName);
@@ -60,11 +64,13 @@ namespace CopyDllsAfterBuild
             }
             if (excludeFolders.Any())
             {
+                logger.LogTrace($"Concat excludes and exclude_folders file names.");
                 var distinct = excludesFromFolder.Distinct();
                 return excludes.Concat(distinct).Distinct().ToArray();
             }
             else
             {
+                logger.LogTrace($"exclude_folders not contains target, just excludes will be use.");
                 return excludes;
             }
         }
@@ -72,10 +78,10 @@ namespace CopyDllsAfterBuild
         /// <summary>
         /// Copy dlls from source to destination. source dlls will search with pattern. excluded when filename is includes in excludes.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
-        /// <param name="pattern"></param>
-        /// <param name="excludes"></param>
+        /// <param name="source">source of copy</param>
+        /// <param name="destination">destination of copy</param>
+        /// <param name="pattern">exclude pattern when exclude is prefix match.</param>
+        /// <param name="excludes">excludes files from copy.</param>
         public void CopyDlls(string source, string destination, string pattern, string[] excludes)
         {
             logger.LogInformation("Copy DLLs");
@@ -91,7 +97,6 @@ namespace CopyDllsAfterBuild
             {
                 logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
 
-                var destinationFile = Path.Combine(destination, ext);
                 var sourceFiles = Directory.EnumerateFiles(source, $"{pattern}.{ext}", SearchOption.TopDirectoryOnly);
                 if (!sourceFiles.Any())
                 {
@@ -101,18 +106,18 @@ namespace CopyDllsAfterBuild
                 }
 
                 var length = excludes.Length;
-                var perfectMatchLength = excludes.Where(x => x.EndsWith("$")).Count();
-                var perfectMatchExcludeFiles = new string[perfectMatchLength];
-                var prefixMatchLength = excludes.Length - perfectMatchLength;
+                var completeMatchLength = excludes.Where(x => x.EndsWith("$")).Count();
+                var completeMatchExcludeFiles = new string[completeMatchLength];
+                var prefixMatchLength = excludes.Length - completeMatchLength;
                 var prefixMatchExcludeFiles = new string[prefixMatchLength];
                 var (prefixIndex, perfectIndex) = (0, 0);
                 for (var i = 0; i < length; i++)
                 {
-                    // # `$` means end of a file name excluding the extension.
+                    // # `$` means end of a file name exclude the extension.
                     if (excludes[i].EndsWith("$"))
                     {
-                        // remove $ marker, and use complete match
-                        perfectMatchExcludeFiles[perfectIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
+                        // complete match. remove $ marker.
+                        completeMatchExcludeFiles[perfectIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
                         perfectIndex++;
                     }
                     else
@@ -124,22 +129,40 @@ namespace CopyDllsAfterBuild
                 }
 
                 // delete existing before copy. File lock will fail this operation.
-                if (File.Exists(destinationFile))
-                    File.Delete(destinationFile);
+                DeleteExistingFiles(destination, ext);
 
                 // do copy!
-                foreach (var sourceFile in sourceFiles)
+                CopyCore(destination, sourceFiles, completeMatchExcludeFiles, prefixMatchExcludeFiles);
+            }
+        }
+
+        private void CopyCore(string destination, IEnumerable<string> sourceFiles, string[] completeMatchExcludeFiles, string[] prefixMatchExcludeFiles)
+        {
+            foreach (var sourceFile in sourceFiles)
+            {
+                var fileName = Path.GetFileName(sourceFile);
+                if (PrefixMatch(prefixMatchExcludeFiles, fileName) || PerfectMatch(completeMatchExcludeFiles, fileName))
                 {
-                    var fileName = Path.GetFileName(sourceFile);
-                    if (PrefixMatch(prefixMatchExcludeFiles, fileName) || PerfectMatch(perfectMatchExcludeFiles, fileName))
-                    {
-                        logger.LogTrace($"skipping copy. filename: {fileName}, reason: match to exclude.");
-                            continue;
-                    }
-                    var destinationPath = Path.Combine(destination, fileName);
-                    logger.LogTrace($"copying from {sourceFile} to {destinationPath}");
-                    File.Copy(sourceFile, destinationPath, true);
-                }                
+                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: match to exclude.");
+                    continue;
+                }
+                var destinationPath = Path.Combine(destination, fileName);
+                logger.LogTrace($"Copying from {sourceFile} to {destinationPath}");
+                File.Copy(sourceFile, destinationPath, true);
+            }
+        }
+
+        private static void DeleteExistingFiles(string destination, string ext)
+        {
+            logger.LogDebug($"Delete copy destination files. extensions {ext}, destination {destination}");
+            var destinationFiles = Directory.EnumerateFiles(destination, $"*.{ext}", SearchOption.TopDirectoryOnly);
+            foreach (var destinationFile in destinationFiles)
+            {
+                if (File.Exists(destinationFile))
+                {
+                    logger.LogTrace($"Deleting existing {destinationFile}");
+                    File.Delete(destinationFile);
+                }
             }
         }
 

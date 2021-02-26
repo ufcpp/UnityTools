@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace CopyDllsAfterBuildLocalToolsUnitTest
@@ -25,8 +26,9 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         // setup
         public PostBuildTest()
         {
-            _projectDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", Guid.NewGuid().ToString());
-            _targetDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", Guid.NewGuid().ToString(), "bin", "Debug", "net5.0");
+            var random = Guid.NewGuid().ToString();
+            _projectDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random);
+            _targetDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random, "bin", "Debug", "net5.0");
             _settingsFile = "CopySettings.json";
             _settingsFilePath = Path.Combine(_projectDir, _settingsFile);
 
@@ -41,7 +43,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void GetSettings_Should_Deserialize_Test()
+        public void GetSettings_Should_Deserialize()
         {
             var json = $@"
 {{
@@ -67,16 +69,11 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void GetSettings_Should_UseDefault_Test()
+        public void GetSettings_Missing_Should_Fail()
         {
             // missing CopySettings.json path should use default settings
-            var expected = new CopySettings();
             var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            Assert.Equal(expected.Destination, settings.Destination);
-            Assert.Equal(expected.Pattern, settings.Pattern);
-            Assert.Equal(expected.Excludes, settings.Excludes);
-            Assert.Equal(expected.ExcludeFolders, settings.ExcludeFolders);
+            Assert.Throws<FileNotFoundException>(() => build.GetSettings(_settingsFile));
         }
 
         [Fact]
@@ -116,7 +113,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void GetExclude_Should_Ignore_metafile_Test()
+        public void GetExclude_Should_Ignore_metafile()
         {
             (string folder, string[] files)[] excludeFolders = new[]
             {
@@ -159,7 +156,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void GetExclude_Should_Distinct_Test()
+        public void GetExclude_Should_Distinct()
         {
             var excludesStrict = new[] { "UnityEngine$", "UnityEditor$" };
             (string folder, string[] files)[] excludeFolders = new[]
@@ -201,7 +198,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void GetExclude_Should_Distinct_Test2()
+        public void GetExclude_Should_Distinct2()
         {
             var excludesStrict = new[] { "UnityEngine$", "UnityEditor$" };
             (string folder, string[] files)[] excludeFolders = new[]
@@ -243,7 +240,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         }
 
         [Fact]
-        public void CopyDllsTest()
+        public void CopyDlls_Should_Success()
         {
             var buildOutputs = new[] {
                 "Class1.dll",
@@ -278,7 +275,6 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
             {
                 CreateExcludeFolders(exclude.folder, exclude.files);
             }
-            CreateTargetDir(buildOutputs);
 
             var json = $@"
 {{

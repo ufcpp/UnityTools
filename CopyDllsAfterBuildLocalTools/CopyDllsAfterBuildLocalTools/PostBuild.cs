@@ -22,22 +22,12 @@ namespace CopyDllsAfterBuild
         public CopySettings GetSettings(string settingsFile)
         {
             var settingsPath = Path.Combine(_projectDir, settingsFile);
-            if (File.Exists(settingsPath))
-            {
-                logger.LogDebug($"Setting file {settingsFile} found.");
-                logger.LogDebug($"Loading JSON file from {settingsPath}");
-                if (!File.Exists(settingsPath))
-                    throw new FileNotFoundException($"Settings file not found from path specified. {settingsPath}.");
+            if (!File.Exists(settingsPath))
+                throw new FileNotFoundException($"Settings file path not found. {settingsPath}.");
 
-                var json = File.ReadAllText(settingsPath, Encoding.UTF8);
-                return CopySettings.LoadJson(json);
-            }
-            else
-            {
-                // note: should throw?
-                logger.LogDebug("Setting file {settingsFile} not found. Use default settings.");
-                return new CopySettings();
-            }
+            logger.LogDebug($"Setting file found, loading file. {settingsFile}");
+            var json = File.ReadAllText(settingsPath, Encoding.UTF8);
+            return CopySettings.LoadJson(json);
         }
 
         /// <summary>

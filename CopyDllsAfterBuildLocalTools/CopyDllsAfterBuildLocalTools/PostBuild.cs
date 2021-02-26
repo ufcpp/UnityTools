@@ -12,6 +12,7 @@ namespace CopyDllsAfterBuild
         private static readonly ILogger logger = Logger.Instance;
 
         private readonly string _projectDir;
+        private int _totalCount;
 
         public PostBuild(string projectDir) => _projectDir = projectDir;
 
@@ -97,7 +98,6 @@ namespace CopyDllsAfterBuild
                 Directory.CreateDirectory(destination);
             }
 
-
             foreach (var ext in unityPluginExtensions)
             {
                 logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
@@ -139,27 +139,33 @@ namespace CopyDllsAfterBuild
                 // do copy!
                 CopyCore(destination, sourceFiles, completeMatchExcludeFiles, prefixMatchExcludeFiles);
             }
+            logger.LogDebug($"Copy completed. Total Copied {_totalCount}.");
         }
 
         private void CopyCore(string destination, IEnumerable<string> sourceFiles, string[] completeMatchExcludeFiles, string[] prefixMatchExcludeFiles)
         {
+            var count = 0;
+            var skipCount = 0;
             foreach (var sourceFile in sourceFiles)
             {
                 var fileName = Path.GetFileName(sourceFile);
                 if (PrefixMatch(prefixMatchExcludeFiles, fileName) || PerfectMatch(completeMatchExcludeFiles, fileName))
                 {
                     logger.LogTrace($"Skipping copy. filename: {fileName}, reason: match to exclude.");
+                    skipCount++;
                     continue;
                 }
                 var destinationPath = Path.Combine(destination, fileName);
                 logger.LogTrace($"Copying from {sourceFile} to {destinationPath}");
                 File.Copy(sourceFile, destinationPath, true);
+                count++;
             }
+            logger.LogDebug($"Copy progress. copied {count}, skipped {skipCount}.");
+            _totalCount += count;
         }
 
         private static void DeleteExistingFiles(string destination, string ext)
         {
-            logger.LogDebug($"Delete copy destination files. extensions {ext}, destination {destination}");
             var destinationFiles = Directory.EnumerateFiles(destination, $"*.{ext}", SearchOption.TopDirectoryOnly);
             foreach (var destinationFile in destinationFiles)
             {

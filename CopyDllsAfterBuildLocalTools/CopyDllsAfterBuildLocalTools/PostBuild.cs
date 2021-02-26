@@ -111,19 +111,19 @@ namespace CopyDllsAfterBuild
                 }
 
                 var length = excludes.Length;
-                var completeMatchLength = excludes.Where(x => x.EndsWith("$")).Count();
-                var completeMatchExcludeFiles = new string[completeMatchLength];
-                var prefixMatchLength = excludes.Length - completeMatchLength;
+                var exactMatchLength = excludes.Where(x => x.EndsWith("$")).Count();
+                var exactMatchExcludeFiles = new string[exactMatchLength];
+                var prefixMatchLength = excludes.Length - exactMatchLength;
                 var prefixMatchExcludeFiles = new string[prefixMatchLength];
-                var (prefixIndex, perfectIndex) = (0, 0);
+                var (prefixIndex, exactIndex) = (0, 0);
                 for (var i = 0; i < length; i++)
                 {
                     // # `$` means end of a file name exclude the extension.
                     if (excludes[i].EndsWith("$"))
                     {
-                        // complete match. remove $ marker.
-                        completeMatchExcludeFiles[perfectIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
-                        perfectIndex++;
+                        // exact match. remove $ marker.
+                        exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
+                        exactIndex++;
                     }
                     else
                     {
@@ -137,19 +137,19 @@ namespace CopyDllsAfterBuild
                 DeleteExistingFiles(destination, ext);
 
                 // do copy!
-                CopyCore(destination, sourceFiles, completeMatchExcludeFiles, prefixMatchExcludeFiles);
+                CopyCore(destination, sourceFiles, exactMatchExcludeFiles, prefixMatchExcludeFiles);
             }
             logger.LogDebug($"Copy completed. Total Copied {_totalCount}.");
         }
 
-        private void CopyCore(string destination, IEnumerable<string> sourceFiles, string[] completeMatchExcludeFiles, string[] prefixMatchExcludeFiles)
+        private void CopyCore(string destination, IEnumerable<string> sourceFiles, string[] exactMatchExcludeFiles, string[] prefixMatchExcludeFiles)
         {
             var count = 0;
             var skipCount = 0;
             foreach (var sourceFile in sourceFiles)
             {
                 var fileName = Path.GetFileName(sourceFile);
-                if (PrefixMatch(prefixMatchExcludeFiles, fileName) || PerfectMatch(completeMatchExcludeFiles, fileName))
+                if (PrefixMatch(prefixMatchExcludeFiles, fileName) || ExactMatch(exactMatchExcludeFiles, fileName))
                 {
                     logger.LogTrace($"Skipping copy. filename: {fileName}, reason: match to exclude.");
                     skipCount++;
@@ -177,7 +177,7 @@ namespace CopyDllsAfterBuild
             }
         }
 
-        private bool PerfectMatch(string[] source, string fileName) => source.Contains(fileName);
+        private bool ExactMatch(string[] source, string fileName) => source.Contains(fileName);
         private bool PrefixMatch(string[] source, string fileName) => source.Any(x => fileName.StartsWith(x));
     }
 }

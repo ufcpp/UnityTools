@@ -9,10 +9,10 @@ namespace CopyDllsAfterBuild
     /// <summary>
     /// Spec of filename for copy.
     /// [exclude]
-    /// if excludes element is end with $, do complete match.
+    /// if excludes element is end with $, do exact match.
     /// if excludes element is not end with $, do prefix match.
     /// [exclude_folders]
-    /// if exclude_folders is found, do complete match with items.
+    /// if exclude_folders is found, do exact match with items.
     /// </summary>
     public class CopySettings
     {
@@ -26,7 +26,7 @@ namespace CopyDllsAfterBuild
         };
 
         /// <summary>
-        /// Destination of Path dlls will be copy to.
+        /// Destination Path which dlls will be copy to.
         /// </summary>
         [JsonPropertyName("destination")]
         public string? Destination { get; set; }
@@ -36,7 +36,7 @@ namespace CopyDllsAfterBuild
         [JsonPropertyName("pattern")]
         public string Pattern { get; set; } = "*";
         /// <summary>
-        /// Exclude file names you don't want to copy from. Complete file name match when name is end with $, others will be prefix match.
+        /// Exclude file names you don't want to copy from. Exact file name match when name is end with $, others will be prefix match.
         /// </summary>
         [JsonPropertyName("excludes")]
         public string[]? Excludes { get; set; }

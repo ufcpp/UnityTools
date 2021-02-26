@@ -22,11 +22,24 @@ namespace CopyDllsAfterBuild
         void LogWarning(string message);
     }
 
+    // I don't want refer another packages like Microsoft.Extensions.Logging, just create simple logger.
     /// <summary>
-    /// Logger with level. I don't want refer another packages like Microsoft.Extensions.Logging.
+    /// Singleton Logger with level. Use logger with <see cref="Logger.Instance"/>
     /// </summary>
     class Logger : ILogger
     {
+        private static readonly LogLevel defaultLogLevel = LogLevel.Information;
+        // add header when logLevel is equals or above this.
+        private static readonly LogLevel headerLogLevel = LogLevel.Debug;
+        private static readonly string[] logHeaders = new[]
+        {
+            "[trac]",
+            "[debg]",
+            "[info]",
+            "[warn]",
+            "[erro]",
+            "[crit]",
+        };
         public static Logger Instance
         {
             get
@@ -52,41 +65,45 @@ namespace CopyDllsAfterBuild
             var logLevelEnv = Environment.GetEnvironmentVariable("COPYDLLS_LOGLEVEL");
             var logLevel = logLevelEnv != null && Enum.TryParse<LogLevel>(logLevelEnv, out var parsed)
                 ? parsed
-                : LogLevel.Information;
+                : defaultLogLevel;
             return new Logger(logLevel);
         }
 
         private bool IsEnabled(LogLevel level) => level >= _logLevel;
+        private string GetPrefix(LogLevel logLevel) => headerLogLevel >= _logLevel ? $"{logHeaders[(int)logLevel]}" : "";
 
         public void LogTrace(string message)
         {
-            if (IsEnabled(LogLevel.Trace))
-                Console.WriteLine("[trac] " + message);
+            Log(LogLevel.Trace, message);
         }
         public void LogDebug(string message)
         {
-            if (IsEnabled(LogLevel.Debug))
-                Console.WriteLine("[debg] " + message);
+            Log(LogLevel.Debug, message);
         }
         public void LogInformation(string message)
         {
-            if (IsEnabled(LogLevel.Information))
-                Console.WriteLine("[info] " + message);
+            Log(LogLevel.Information, message);
         }
         public void LogWarning(string message)
         {
-            if (IsEnabled(LogLevel.Warning))
-                Console.WriteLine("[warn] " + message);
+            Log(LogLevel.Warning, message);
         }
         public void LogError(string message)
         {
-            if (IsEnabled(LogLevel.Error))
-                Console.WriteLine("[erro] " + message);
+            Log(LogLevel.Error, message);
         }
         public void LogCritical(string message)
         {
-            if (IsEnabled(LogLevel.Critical))
-                Console.WriteLine("[crit] " + message);
+            Log(LogLevel.Trace, message);
+        }
+        public void Log(LogLevel logLevel, string message)
+        {
+            // no message formatter or gc friendly, just control level is enough.
+            if (IsEnabled(logLevel))
+            {
+                var prefix = GetPrefix(logLevel);
+                Console.WriteLine(prefix + message);
+            }
         }
     }
 }

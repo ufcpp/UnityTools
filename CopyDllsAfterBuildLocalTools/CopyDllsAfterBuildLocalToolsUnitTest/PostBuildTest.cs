@@ -48,12 +48,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{_excludes[0]}"",
-""{_excludes[1]}""
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
 ],
 ""exclude_folders"": [
-""{_excludeFolders[0].folder}"",
-""{_excludeFolders[1].folder}""
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);
@@ -98,12 +98,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{_excludes[0]}"",
-""{_excludes[1]}""
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
 ],
 ""exclude_folders"": [
-""{_excludeFolders[0].folder}"",
-""{_excludeFolders[1].folder}""
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);
@@ -141,12 +141,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{_excludes[0]}"",
-""{_excludes[1]}""
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
 ],
 ""exclude_folders"": [
-""{excludeFolders[0].folder}"",
-""{excludeFolders[1].folder}""
+    ""{excludeFolders[0].folder}"",
+    ""{excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);
@@ -183,12 +183,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{excludesStrict[0]}"",
-""{excludesStrict[1]}""
+    ""{excludesStrict[0]}"",
+    ""{excludesStrict[1]}""
 ],
 ""exclude_folders"": [
-""{excludeFolders[0].folder}"",
-""{excludeFolders[1].folder}""
+    ""{excludeFolders[0].folder}"",
+    ""{excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);
@@ -225,12 +225,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{excludesStrict[0]}"",
-""{excludesStrict[1]}""
+    ""{excludesStrict[0]}"",
+    ""{excludesStrict[1]}""
 ],
 ""exclude_folders"": [
-""{excludeFolders[0].folder}"",
-""{excludeFolders[1].folder}""
+    ""{excludeFolders[0].folder}"",
+    ""{excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);
@@ -285,12 +285,12 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 ""destination"": ""{_destination}"",
 ""pattern"": ""{_pattern}"",
 ""excludes"": [
-""{_excludes[0]}"",
-""{_excludes[1]}""
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
 ],
 ""exclude_folders"": [
-""{_excludeFolders[0].folder}"",
-""{_excludeFolders[1].folder}""
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
 ]
 }}";
             File.WriteAllText(_settingsFilePath, json);

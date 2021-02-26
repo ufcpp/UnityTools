@@ -8,6 +8,9 @@ namespace CopyDllsAfterBuild
 {
     public class PostBuild
     {
+        // `$` means end of a file name exclude the extension. if file name is end with this marker, will do exact match.
+        private const string ExactMatchMarker = "$";
+
         private static readonly string[] unityPluginExtensions = new[] { "dll", "pdb", "xml" };
         private static readonly ILogger logger = Logger.Instance;
 
@@ -61,8 +64,8 @@ namespace CopyDllsAfterBuild
                         {
                             logger.LogTrace($"Exclude file found from exclude_folders. file: {excludeFile}");
 
-                            // $ to use exact match instead of prefix match.
-                            var fileName = Path.GetFileNameWithoutExtension(excludeFile) + "$";
+                            // mark for exact match instead of prefix match.
+                            var fileName = Path.GetFileNameWithoutExtension(excludeFile) + ExactMatchMarker;
                             excludesFromFolder.Add(fileName);
                         }
                     }
@@ -111,15 +114,14 @@ namespace CopyDllsAfterBuild
                 }
 
                 var length = excludes.Length;
-                var exactMatchLength = excludes.Where(x => x.EndsWith("$")).Count();
+                var exactMatchLength = excludes.Where(x => x.EndsWith(ExactMatchMarker)).Count();
                 var exactMatchExcludeFiles = new string[exactMatchLength];
                 var prefixMatchLength = excludes.Length - exactMatchLength;
                 var prefixMatchExcludeFiles = new string[prefixMatchLength];
                 var (prefixIndex, exactIndex) = (0, 0);
                 for (var i = 0; i < length; i++)
                 {
-                    // # `$` means end of a file name exclude the extension.
-                    if (excludes[i].EndsWith("$"))
+                    if (excludes[i].EndsWith(ExactMatchMarker))
                     {
                         // exact match. remove $ marker.
                         exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
@@ -177,7 +179,7 @@ namespace CopyDllsAfterBuild
             }
         }
 
-        private bool ExactMatch(string[] source, string fileName) => source.Contains(fileName);
-        private bool PrefixMatch(string[] source, string fileName) => source.Any(x => fileName.StartsWith(x));
+        private bool ExactMatch(string[] source, string input) => source.Contains(input);
+        private bool PrefixMatch(string[] source, string input) => source.Any(x => input.StartsWith(x));
     }
 }

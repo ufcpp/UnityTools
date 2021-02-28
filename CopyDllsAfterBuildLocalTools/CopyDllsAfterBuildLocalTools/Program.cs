@@ -32,6 +32,7 @@ namespace CopyDllsAfterBuild
             catch (Exception ex)
             {
                 logger.LogCritical($"{ex.Message} {ex.GetType().FullName} {ex.StackTrace}");
+                logger.LogInformation("Set COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
                 throw;
             }
         }

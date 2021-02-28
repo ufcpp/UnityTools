@@ -41,7 +41,7 @@ Run `dotnet build` will work as like CopyDllsAfterBuild.
 
 ### Is there any way to show debug log?
 
-Yes, out COPYDLLS_LOGLEVEL env before running `dotnet build`.
+Yes, set `COPYDLLS_LOGLEVEL` env before running `dotnet build`.
 
 * `Warning`, `Error`, `Critical` only output if error happens.
 * `Information` just output "Copy DLLs". (default)

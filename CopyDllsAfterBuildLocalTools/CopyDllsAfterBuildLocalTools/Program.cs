@@ -12,9 +12,9 @@ namespace CopyDllsAfterBuild
         /// <summary>
         /// Run CopyDlls operation.
         /// </summary>
-        /// <param name="projectDir">Project Root directory. Should be $(ProjectDir)</param>
-        /// <param name="targetDir">Project Build output directory. Should be $(TargetDir)</param>
-        /// <param name="settingFile">JSON file to specify settings. Make sure file is UTF8.</param>
+        /// <param name="projectDir">--project-dir. Project Root directory. Should be $(ProjectDir)</param>
+        /// <param name="targetDir">--target-dir. Project Build output directory. Should be $(TargetDir)</param>
+        /// <param name="settingFile">--setting-file. JSON file to specify settings. Make sure file is UTF8.</param>
         public void Run(string projectDir, string targetDir, string settingFile = "CopySettings.json")
         {
             try

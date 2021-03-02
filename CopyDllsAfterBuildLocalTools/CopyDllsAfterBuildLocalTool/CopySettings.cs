@@ -67,10 +67,8 @@ namespace CopyDllsAfterBuild
                 throw new ArgumentNullException($"You can not empty both exclude and exclude_folders property.");
 
             // sset empty array when null. can not use property init, because array is fixed size...
-            if (serialized.Excludes == null)
-                serialized.Excludes = Array.Empty<string>();
-            if (serialized.ExcludeFolders == null)
-                serialized.ExcludeFolders = Array.Empty<string>();
+            serialized.Excludes ??= Array.Empty<string>();
+            serialized.ExcludeFolders ??= Array.Empty<string>();
 
             return serialized;
         }

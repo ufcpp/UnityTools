@@ -43,17 +43,7 @@ namespace CopyDllsAfterBuild
         /// <summary>
         /// Singleton instance of <see cref="Logger">
         /// </summary>
-        public static Logger Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = GetLogger();
-                }
-                return _instance;
-            }
-        }
+        public static Logger Instance => _instance ??= GetLogger();
         private static Logger? _instance = null;
 
         private readonly LogLevel _logLevel;

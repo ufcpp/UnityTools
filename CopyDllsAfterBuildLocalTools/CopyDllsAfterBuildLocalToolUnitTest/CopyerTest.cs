@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace CopyDllsAfterBuildLocalToolsUnitTest
+namespace CopyDllsAfterBuildLocalToolUnitTest
 {
-    public class PostBuildTest : IDisposable
+    public class CopyerTest : IDisposable
     {
         private readonly string _destination = "../Dlls";
         private readonly string _pattern = "*";
@@ -24,7 +24,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         private readonly string _settingsFilePath;
 
         // setup
-        public PostBuildTest()
+        public CopyerTest()
         {
             var random = Guid.NewGuid().ToString();
             _projectDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random);
@@ -60,8 +60,8 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
             Assert.Equal(_destination, settings.Destination);
             Assert.Equal(_pattern, settings.Pattern);
             Assert.Equal(_excludes, settings.Excludes);
@@ -72,8 +72,8 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
         public void GetSettings_Missing_Should_Fail()
         {
             // missing CopySettings.json path should use default settings
-            var build = new PostBuild(_projectDir);
-            Assert.Throws<FileNotFoundException>(() => build.GetSettings(_settingsFile));
+            var copyer = new Copyer(_projectDir);
+            Assert.Throws<FileNotFoundException>(() => copyer.GetSettings(_settingsFile));
         }
 
         [Fact]
@@ -105,9 +105,9 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
             Assert.Equal(expected, excludes.OrderBy(x => x).ToArray());
             Assert.Equal(6, excludes.Count()); // exclude(2) + exclude_folders(4)
         }
@@ -148,9 +148,9 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
             Assert.Equal(expected, excludes.OrderBy(x => x).ToArray());
             Assert.Equal(4, excludes.Count()); // exclude(2) + exclude_folders(4) - .meta excludes(2)
         }
@@ -190,9 +190,9 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
             Assert.Equal(expected, excludes.OrderBy(x => x).ToArray());
             Assert.Equal(4, excludes.Count()); // exclude(2) + exclude_folders(4) - distinct(2)
         }
@@ -232,9 +232,9 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
             Assert.Equal(expected, excludes.OrderBy(x => x).ToArray());
             Assert.Equal(2, excludes.Count()); // exclude(2) + exclude_folders(4) - distinct(4)
         }
@@ -291,10 +291,10 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
 }}";
             File.WriteAllText(_settingsFilePath, json);
 
-            var build = new PostBuild(_projectDir);
-            var settings = build.GetSettings(_settingsFile);
-            var excludes = build.GetExcludes(settings.Excludes, settings.ExcludeFolders);
-            build.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
             var actual = Directory.GetFiles(settings.Destination).Select(x => Path.GetFileName(x)).OrderBy(x => x).ToArray();
             Assert.Equal(expected, actual);
         }

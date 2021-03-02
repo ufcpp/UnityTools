@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CopyDllsAfterBuildLocalTools\CopyDllsAfterBuildLocalTool.csproj" />
+    <ProjectReference Include="..\CopyDllsAfterBuildLocalTool\CopyDllsAfterBuildLocalTool.csproj" />
   </ItemGroup>
 
 </Project>

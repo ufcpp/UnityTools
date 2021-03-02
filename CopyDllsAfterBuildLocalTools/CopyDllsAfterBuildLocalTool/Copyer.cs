@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CopyDllsAfterBuild
 {
-    public class PostBuild
+    public class Copyer
     {
         // `$` means end of a file name exclude the extension. if file name is end with this marker, will do exact match.
         private const string ExactMatchMarker = "$";
@@ -17,7 +17,7 @@ namespace CopyDllsAfterBuild
         private readonly string _projectDir;
         private int _totalCount;
 
-        public PostBuild(string projectDir) => _projectDir = projectDir;
+        public Copyer(string projectDir) => _projectDir = projectDir;
 
         public CopySettings GetSettings(string settingsFile)
         {
@@ -169,7 +169,7 @@ namespace CopyDllsAfterBuild
             }
         }
 
-        private bool ExactMatch(string[] source, string input) => source.Contains(input);
-        private bool PrefixMatch(string[] source, string input) => source.Any(x => input.StartsWith(x));
+        private static bool ExactMatch(string[] source, string input) => source.Contains(input);
+        private static bool PrefixMatch(string[] source, string input) => source.Any(x => input.StartsWith(x));
     }
 }

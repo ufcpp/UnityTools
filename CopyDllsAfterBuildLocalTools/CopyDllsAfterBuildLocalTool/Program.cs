@@ -22,12 +22,12 @@ namespace CopyDllsAfterBuild
                 var trimedProjectDir = projectDir.TrimStart('"').TrimEnd('"');
                 var trimedTargetdir = targetDir.TrimStart('"').TrimEnd('"');
 
-                var build = new PostBuild(trimedProjectDir);
-                var settings = build.GetSettings(settingFile);
-                var excludes = build.GetExcludes(settings.Excludes!, settings.ExcludeFolders!);
+                var copyer = new Copyer(trimedProjectDir);
+                var settings = copyer.GetSettings(settingFile);
+                var excludes = copyer.GetExcludes(settings.Excludes!, settings.ExcludeFolders!);
                 var dllPath = Path.Combine(trimedProjectDir, settings.Destination!);
 
-                build.CopyDlls(trimedTargetdir, dllPath, settings.Pattern, excludes);
+                copyer.CopyDlls(trimedTargetdir, dllPath, settings.Pattern, excludes);
             }
             catch (Exception ex)
             {

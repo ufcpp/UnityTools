@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <PackAsTool>true</PackAsTool>
-    <PackageId>CopyDllsAfterBuildLocalTools</PackageId>
+    <PackageId>CopyDllsAfterBuildLocalTool</PackageId>
     <ToolCommandName>dotnet-copydllsafterbuild</ToolCommandName>
     <Authors>Nobuyuki Iwanaga</Authors>
     <Description>Copy DLLs/PDBs to a external folder on post build.</Description>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CopyDllsAfterBuild
+namespace CopyDllsAfterBuildLocalTool
 {
     public enum LogLevel
     {

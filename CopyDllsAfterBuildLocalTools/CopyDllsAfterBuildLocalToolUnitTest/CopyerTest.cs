@@ -1,4 +1,4 @@
-﻿using CopyDllsAfterBuild;
+﻿using CopyDllsAfterBuildLocalTool;
 using System;
 using System.IO;
 using System.Linq;
@@ -299,6 +299,17 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void CopyDlls_Should_Skip_BinaryMatch_Destination()
+        {
+            // todo: add Binary Match skip test
+        }
+
+        [Fact]
+        public void CopyDlls_Should_Prune_Destination()
+        {
+            // todo: add Prune test
+        }
 
         private void CreateTempPath()
         {

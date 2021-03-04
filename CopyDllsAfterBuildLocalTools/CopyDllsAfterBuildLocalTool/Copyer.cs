@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace CopyDllsAfterBuild
+namespace CopyDllsAfterBuildLocalTool
 {
     public class Copyer
     {
@@ -15,7 +15,8 @@ namespace CopyDllsAfterBuild
         private static readonly ILogger logger = Logger.Instance;
 
         private readonly string _projectDir;
-        private int _totalCount;
+        // destination depth will be only top directory. ignore for child folder in destination path.
+        private readonly SearchOption _destinationDepth = SearchOption.TopDirectoryOnly;
 
         public Copyer(string projectDir) => _projectDir = projectDir;
 
@@ -75,12 +76,14 @@ namespace CopyDllsAfterBuild
         }
 
         /// <summary>
-        /// Copy dlls from source to destination. source dlls will search with pattern. excluded when filename is includes in excludes.
+        /// Copy dlls from source folder to destination folder.
+        /// Source dlls will search with pattern.
+        /// When filename is includes in excludes, it won't copy.
         /// </summary>
-        /// <param name="source">source of copy</param>
-        /// <param name="destination">destination of copy</param>
-        /// <param name="pattern">exclude pattern when exclude is prefix match.</param>
-        /// <param name="excludes">excludes files from copy.</param>
+        /// <param name="source">copy source folder path</param>
+        /// <param name="destination">copy destination folder path</param>
+        /// <param name="pattern">exclude file name pattern to exclude.</param>
+        /// <param name="excludes">excludes file names from copy.</param>
         public void CopyDlls(string source, string destination, string pattern, string[] excludes)
         {
             logger.LogInformation("Copy DLLs");
@@ -95,7 +98,7 @@ namespace CopyDllsAfterBuild
             {
                 logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
 
-                var sourceFiles = Directory.EnumerateFiles(source, $"{pattern}.{ext}", SearchOption.TopDirectoryOnly);
+                var sourceFiles = Directory.EnumerateFiles(source, $"{pattern}.{ext}", _destinationDepth);
                 if (!sourceFiles.Any())
                 {
                     // origin not found, go next.
@@ -125,46 +128,85 @@ namespace CopyDllsAfterBuild
                     }
                 }
 
-                // delete existing before copy. File lock will fail this operation.
-                DeleteExistingFiles(destination, ext);
+                // Sync source dlls to destination path
+                var realSourceFiles = SkipExcludes(sourceFiles, exactMatchExcludeFiles, prefixMatchExcludeFiles);
+                SyncCore(realSourceFiles, destination, ext);
 
-                // do copy!
-                CopyCore(destination, sourceFiles, exactMatchExcludeFiles, prefixMatchExcludeFiles);
+                // todo: add statistics
             }
-            logger.LogDebug($"Copy completed. Total Copied {_totalCount}.");
         }
 
-        private void CopyCore(string destination, IEnumerable<string> sourceFiles, string[] exactMatchExcludeFiles, string[] prefixMatchExcludeFiles)
+        /// <summary>
+        /// Get Excluded source files
+        /// </summary>
+        /// <param name="sourceFiles"></param>
+        /// <param name="exactMatchExcludeFiles"></param>
+        /// <param name="prefixMatchExcludeFiles"></param>
+        /// <returns></returns>
+        private string[] SkipExcludes(IEnumerable<string> sourceFiles, string[] exactMatchExcludeFiles, string[] prefixMatchExcludeFiles)
         {
-            var count = 0;
-            var skipCount = 0;
+            var outputs = new List<string>();
             foreach (var sourceFile in sourceFiles)
             {
                 var fileName = Path.GetFileName(sourceFile);
                 if (PrefixMatch(prefixMatchExcludeFiles, fileName) || ExactMatch(exactMatchExcludeFiles, fileName))
                 {
+                    // skipped
                     logger.LogTrace($"Skipping copy. filename: {fileName}, reason: match to exclude.");
-                    skipCount++;
                     continue;
                 }
-                var destinationPath = Path.Combine(destination, fileName);
-                logger.LogTrace($"Copying from {sourceFile} to {destinationPath}");
-                File.Copy(sourceFile, destinationPath, true);
-                count++;
+                outputs.Add(sourceFile);
             }
-            logger.LogDebug($"Copy progress. copied {count}, skipped {skipCount}.");
-            _totalCount += count;
+            return outputs.ToArray();
         }
 
-        private static void DeleteExistingFiles(string destination, string ext)
+        /// <summary>
+        /// Sync files from source to destination for current file extension.
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="destination"></param>
+        /// <param name="extention"></param>
+        public void SyncCore(IEnumerable<string> sources, string destination, string extention)
         {
-            var destinationFiles = Directory.EnumerateFiles(destination, $"*.{ext}", SearchOption.TopDirectoryOnly);
-            foreach (var destinationFile in destinationFiles)
+            // copy
+            foreach (var copyFrom in sources)
             {
-                if (File.Exists(destinationFile))
+                var fileName = Path.GetFileName(copyFrom);
+                var copyTo = Path.Combine(destination, fileName);
+
+                // Write source file to destination path
+                var sourceBinary = File.ReadAllBytes(copyFrom);
+                var result = FileWriter.Write(sourceBinary, copyTo, WriteCheckOption.BinaryEquality);
+                if (result)
                 {
-                    logger.LogTrace($"Deleting existing {destinationFile}");
-                    File.Delete(destinationFile);
+                    // skipped
+                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: same binary.");
+                }
+                // copied
+                logger.LogTrace($"Copied. filename: {fileName}");
+            }
+
+            // prune
+            var destinationFiles = Directory.EnumerateFiles(destination, $"*.{extention}", _destinationDepth);
+            var pruneExcludes = sources.Select(x => Path.Combine(destination, Path.GetFileName(x))).ToArray();
+            Prune(destinationFiles, pruneExcludes);
+        }
+
+        /// <summary>
+        /// Delete destination files not needed any more.
+        /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="ext"></param>
+        private static void Prune(IEnumerable<string> targets, IEnumerable<string> excludes)
+        {
+            var filesToRemove = targets.Except(excludes);
+            foreach (var item in filesToRemove)
+            {
+                if (File.Exists(item))
+                {
+                    // pruned
+                    logger.LogTrace($"Prune unneccesary file. filename: {Path.GetFileName(item)}, reason: marked as prune.");
+                    File.Delete(item);
                 }
             }
         }

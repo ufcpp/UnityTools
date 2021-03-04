@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace CopyDllsAfterBuild
+namespace CopyDllsAfterBuildLocalTool
 {
     partial class Program
     {
@@ -25,9 +25,9 @@ namespace CopyDllsAfterBuild
                 var copyer = new Copyer(trimedProjectDir);
                 var settings = copyer.GetSettings(settingFile);
                 var excludes = copyer.GetExcludes(settings.Excludes!, settings.ExcludeFolders!);
-                var dllPath = Path.Combine(trimedProjectDir, settings.Destination!);
+                var destination = Path.Combine(trimedProjectDir, settings.Destination!);
 
-                copyer.CopyDlls(trimedTargetdir, dllPath, settings.Pattern, excludes);
+                copyer.CopyDlls(trimedTargetdir, destination, settings.Pattern, excludes);
             }
             catch (Exception ex)
             {

@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace CopyDllsAfterBuild
+namespace CopyDllsAfterBuildLocalTool
 {
     /// <summary>
     /// Spec of filename for copy.

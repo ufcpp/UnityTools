@@ -1,4 +1,4 @@
-using CopyDllsAfterBuild;
+using CopyDllsAfterBuildLocalTool;
 using System;
 using System.Text.Json;
 using Xunit;

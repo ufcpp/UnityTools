@@ -76,15 +76,15 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
-        /// Copy dlls from source folder to destination folder.
+        /// Sync dlls from source folder to destination folder.
         /// Source dlls will search with pattern.
         /// When filename is includes in excludes, it won't copy.
         /// </summary>
         /// <param name="source">copy source folder path</param>
         /// <param name="destination">copy destination folder path</param>
-        /// <param name="pattern">exclude file name pattern to exclude.</param>
+        /// <param name="pattern">source file name pattern to search.</param>
         /// <param name="excludes">excludes file names from copy.</param>
-        public void CopyDlls(string source, string destination, string pattern, string[] excludes)
+        public void Sync(string source, string destination, string pattern, string[] excludes)
         {
             logger.LogInformation("Copy DLLs");
 
@@ -98,14 +98,16 @@ namespace CopyDllsAfterBuildLocalTool
             {
                 logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
 
-                var sourceFiles = Directory.EnumerateFiles(source, $"{pattern}.{ext}", _destinationDepth);
-                if (!sourceFiles.Any())
+                // source candidates
+                var candicates = Directory.EnumerateFiles(source, $"{pattern}.{ext}", _destinationDepth);
+                if (!candicates.Any())
                 {
                     // origin not found, go next.
                     logger.LogTrace($"skipping copy. extension: {ext}, reason: Source files not found, skip to next.");
                     continue;
                 }
 
+                // classify excludes with ExactMatch and PrefixMatch
                 var length = excludes.Length;
                 var exactMatchLength = excludes.Where(x => x.EndsWith(ExactMatchMarker)).Count();
                 var exactMatchExcludeFiles = new string[exactMatchLength];
@@ -128,9 +130,11 @@ namespace CopyDllsAfterBuildLocalTool
                     }
                 }
 
-                // Sync source dlls to destination path
-                var realSourceFiles = SkipExcludes(sourceFiles, exactMatchExcludeFiles, prefixMatchExcludeFiles);
-                SyncCore(realSourceFiles, destination, ext);
+                // determine source files
+                var sourceFiles = SkipExcludes(candicates, exactMatchExcludeFiles, prefixMatchExcludeFiles);
+
+                // synchronize source to destination
+                SyncCore(sourceFiles, destination, ext);
 
                 // todo: add statistics
             }
@@ -166,7 +170,7 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="sources"></param>
         /// <param name="destination"></param>
         /// <param name="extention"></param>
-        public void SyncCore(IEnumerable<string> sources, string destination, string extention)
+        private void SyncCore(IEnumerable<string> sources, string destination, string extention)
         {
             // copy
             foreach (var copyFrom in sources)

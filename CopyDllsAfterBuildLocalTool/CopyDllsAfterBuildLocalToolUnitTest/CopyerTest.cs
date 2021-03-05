@@ -294,7 +294,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             var copyer = new Copyer(_projectDir);
             var settings = copyer.GetSettings(_settingsFile);
             var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
-            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            copyer.Sync(_targetDir, settings.Destination, settings.Pattern, excludes);
             var actual = Directory.GetFiles(settings.Destination).Select(x => Path.GetFileName(x)).OrderBy(x => x).ToArray();
             Assert.Equal(expected, actual);
         }

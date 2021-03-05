@@ -313,7 +313,8 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             CreateDestinationFolders(_destinationDir, destinations);
             // map of Dictionary<string, bytes[]>(fileName, bytes)
             var expectedFiles = Directory.GetFiles(_destinationDir).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
-            await Task.Delay(TimeSpan.FromSeconds(1)); // wait for file time update
+            // Linux FileSystem suspect to not update timestamp for too short update, wait bit.
+            await Task.Delay(TimeSpan.FromMilliseconds(1));
 
             CreateTargetDir(_buildOutputs);
             CreateExcludes(_excludes);
@@ -362,7 +363,8 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             CreateDestinationFolders(_destinationDir, destinations, Guid.NewGuid().ToString());
             // map of Dictionary<string, bytes[]>(fileName, bytes)
             var expectedFiles = Directory.GetFiles(_destinationDir).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
-            await Task.Delay(TimeSpan.FromSeconds(1)); // wait for file time update
+            // Linux FileSystem suspect to not update timestamp for too short update, wait bit.
+            await Task.Delay(TimeSpan.FromMilliseconds(1));
 
             CreateTargetDir(_buildOutputs);
             CreateExcludes(_excludes);

@@ -16,6 +16,8 @@ dotnet new tool-manifest
 dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
 ```
 
+> TIPS: See [Tutorial: Install and use \.NET local tools \- \.NET CLI \| Microsoft Docs](https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use) for more details.
+
 * Step2. Add PostBuild event to your csproj.
 
 ```csproj
@@ -24,13 +26,15 @@ dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
   </Target>
 ```
 
-* Step3. Generate CopySettings.json on same directory of csproj, or copy json from other project.
+* Step3. Generate CopySettings.json on same directory of csproj.
+
+> TIPS: You can copy CopySettings.json from other project instead.
 
 ```shell
 dotnet tool run dotnet-copydllsafterbuild init
 ```
 
-* Step4. (Optional) Modify CopySettings.json if needed. You can check json is valid via command.
+* Step4. (Optional) Modify CopySettings.json if needed. You can check json is valid via `validate` command.
 
 ```shell
 dotnet tool run dotnet-copydllsafterbuild validate

@@ -27,6 +27,7 @@ namespace CopyDllsAfterBuildLocalTool
         private static readonly JsonSerializerOptions serializeOptions = new JsonSerializerOptions()
         {
             IgnoreNullValues = false, // keep exclude_folders even if it was empty array.
+            WriteIndented = true,
         };
 
         /// <summary>
@@ -39,7 +40,6 @@ namespace CopyDllsAfterBuildLocalTool
         /// </summary>
         [JsonPropertyName("pattern")]
         public string Pattern { get; set; } = "*";
-
         /// <summary>
         /// Exclude file names you don't want to copy from. Exact file name match when name is end with $, others will be prefix match.
         /// </summary>
@@ -51,8 +51,11 @@ namespace CopyDllsAfterBuildLocalTool
         [JsonPropertyName("exclude_folders")]
         public string[]? ExcludeFolders { get; set; }
 
-        [JsonIgnore]
-        public LogLevel LogLevel { get; set; } = LogLevel.Information;
+        public override string ToString()
+        {
+            var json = JsonSerializer.Serialize<CopySettings>(this, serializeOptions);
+            return json;
+        }
 
         /// <summary>
         /// Load Settings from Json

@@ -1,6 +1,6 @@
 using CopyDllsAfterBuildLocalTool;
 using System;
-using System.Text.Json;
+using System.IO;
 using Xunit;
 
 namespace CopyDllsAfterBuildLocalToolsUnitTest
@@ -8,6 +8,7 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
     public class DeserializeTest
     {
         private readonly string _destination = "../Dlls";
+        private readonly string _fullPathDestination = Path.GetFullPath("../Dlls");
         private readonly string _pattern = "*";
         private readonly string[] _excludes = new[] { "UnityEngine", "UnityEditor" };
         private readonly string[] _excludeFolders = new[] { "ExcludeDlls", "ExcludeDlls2" };
@@ -31,6 +32,29 @@ namespace CopyDllsAfterBuildLocalToolsUnitTest
             var settings = CopySettings.LoadJson(json);
             Assert.Equal(_destination, settings.Destination);
             Assert.Equal(_pattern, settings.Pattern);
+            Assert.Equal(_excludes, settings.Excludes);
+            Assert.Equal(_excludeFolders, settings.ExcludeFolders);
+        }
+
+        [Fact]
+        public void FullPath_Destination_Allow()
+        {
+            var json = $@"
+{{
+  ""destination"": ""{_destination}"",
+  ""pattern"": ""{_pattern}"",
+  ""excludes"": [
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
+  ],
+  ""exclude_folders"": [
+    ""{_excludeFolders[0]}"",
+    ""{_excludeFolders[1]}""
+  ]
+}}";
+            var settings = CopySettings.LoadJson(json);
+            Assert.Equal(CopySettings.SafeJsonStringReplace(_destination), settings.Destination);
+            Assert.Equal("*", settings.Pattern);
             Assert.Equal(_excludes, settings.Excludes);
             Assert.Equal(_excludeFolders, settings.ExcludeFolders);
         }

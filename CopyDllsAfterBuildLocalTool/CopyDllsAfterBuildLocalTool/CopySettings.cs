@@ -58,6 +58,18 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
+        /// Replace string to JSON safe string.
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static string SafeJsonStringReplace(string json)
+        {
+            // \ is JSON escape. It should be used for path, so let's replace \ to /.
+            json = json.Replace("\\", "/");
+            return json;
+        }
+
+        /// <summary>
         /// Load Settings from Json
         /// </summary>
         /// <param name="sourcePath"></param>
@@ -65,7 +77,7 @@ namespace CopyDllsAfterBuildLocalTool
         public static CopySettings LoadJson(string json)
         {
             logger.LogTrace($"Trying to deserialize settings file\n{json}");
-            var serialized = JsonSerializer.Deserialize<CopySettings>(json, deserializeOptions);
+            var serialized = JsonSerializer.Deserialize<CopySettings>(SafeJsonStringReplace(json), deserializeOptions);
 
             if (serialized == null)
                 throw new NullReferenceException($"Deserialized json but result was empty. May be source json is empty.");

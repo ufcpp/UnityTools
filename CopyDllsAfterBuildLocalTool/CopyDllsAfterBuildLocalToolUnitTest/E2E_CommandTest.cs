@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CopyDllsAfterBuildLocalToolUnitTest
 {
-    public class E2E_CommandTest
+    public class E2E_CommandTest : IDisposable
     {
         private readonly string _basePath;
         private readonly string _projectDir;
@@ -56,8 +56,22 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         public void ValidateCommandTest()
         {
             var program = new Program();
+            // default settings must be valid
             program.Init(_projectDir);
             Assert.Equal(0, program.Validate(_projectDir));
+
+            // invalid settings should fail
+            var invalidJson = $@"
+{{
+  ""pattern"": ""../Dlls"",
+  ""excludes"": [
+    ""UnityEngine"",
+    ""UnityEditor""
+  ],
+  ""exclude_folders"": []
+}}";
+            File.WriteAllText(_settings, invalidJson, Encoding.UTF8);
+            Assert.Equal(1, program.Validate(_projectDir));
         }
 
         [Fact]
@@ -109,7 +123,6 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             // 1st run. copy to empty destination
             program.Run(_projectDir, _targetDir);
             var actual = getActual(destinationPath);
-            var i = 0;
             foreach (var item in actual.Keys)
             {
                 // File successfully copy

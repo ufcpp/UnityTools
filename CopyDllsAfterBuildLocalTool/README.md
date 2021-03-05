@@ -7,7 +7,7 @@ https://www.nuget.org/packages/CopyDllsAfterBuildLocalTools
 
 ## Installation
 
-3 step to use it on your project.
+Steps to use in your project.
 
 * Step1. Install as .NET Local Tool.
 

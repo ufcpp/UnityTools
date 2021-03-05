@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CopyDllsAfterBuildLocalTool
 {
-    partial class Program
+    public class Program
     {
         private static readonly ILogger logger = Logger.Instance;
         static void Main(string[] args) => CoconaLiteApp.Run<Program>(args);

@@ -107,14 +107,12 @@ namespace CopyDllsAfterBuildLocalTool
             var sourceFiles = new List<string>();
             foreach (var ext in unityPluginExtensions)
             {
-                logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
-
                 // source candidates
                 var candicates = Directory.EnumerateFiles(source, $"{pattern}.{ext}", searchOption);
                 if (!candicates.Any())
                 {
                     // origin not found, go next.
-                    logger.LogTrace($"skipping copy, go next extention. extension: {ext}, reason: Source files not found.");
+                    logger.LogTrace($"Skipping {ext}, go next extention. reason: Source extension files not found.");
                     continue;
                 }
 
@@ -184,7 +182,7 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
-        /// Copy files from source to destination for current file extension.
+        /// Copy files from source to destination.
         /// </summary>
         /// <param name="sources"></param>
         /// <param name="destination"></param>

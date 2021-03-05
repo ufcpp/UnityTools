@@ -17,33 +17,26 @@ namespace CopyDllsAfterBuildLocalTool
         public static bool Compare(ReadOnlySpan<byte> source, Stream target)
         {
             ReadOnlySpan<byte> sourceBuffer = source;
-            var targetBuffer = ArrayPool<byte>.Shared.Rent(BufferSliceSize);
-            try
+            Span<byte> targetBuffer = stackalloc byte[BufferSliceSize];
+            while (true)
             {
-                while (true)
-                {
-                    var targetRead = target.Read(targetBuffer);
+                var targetRead = target.Read(targetBuffer);
 
-                    // reach to end
-                    if (sourceBuffer.Length == 0)
-                        return targetRead == 0;
-                    // target was empty or shorter then source
-                    if (targetRead == 0)
-                        return false;
+                // reach to end
+                if (sourceBuffer.Length == 0)
+                    return targetRead == 0;
+                // target was empty or shorter then source
+                if (targetRead == 0)
+                    return false;
 
-                    // read source buffer for sliced size.
-                    var sourceBufferSlice = sourceBuffer.Length < BufferSliceSize ? sourceBuffer : sourceBuffer[..BufferSliceSize];
-                    // binary equal check for source[0..N] == target[0..N]
-                    if (!sourceBufferSlice.SequenceEqual(targetBuffer[..targetRead]))
-                        return false;
+                // read source buffer for sliced size.
+                var sourceBufferSlice = sourceBuffer.Length < BufferSliceSize ? sourceBuffer : sourceBuffer[..BufferSliceSize];
+                // binary equal check for source[0..N] == target[0..N]
+                if (!sourceBufferSlice.SequenceEqual(targetBuffer[..targetRead]))
+                    return false;
 
-                    // next slice...
-                    sourceBuffer = sourceBuffer[targetRead..];
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(targetBuffer);
+                // next slice...
+                sourceBuffer = sourceBuffer[targetRead..];
             }
         }
 

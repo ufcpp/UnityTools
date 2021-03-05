@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CopyDllsAfterBuildLocalToolUnitTest
 {
-    public class CommandTest
+    public class E2E_CommandTest
     {
         private readonly string _basePath;
         private readonly string _projectDir;
@@ -16,7 +16,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         private readonly string _settings;
 
         // setup
-        public CommandTest()
+        public E2E_CommandTest()
         {
             var random = Guid.NewGuid().ToString();
             _basePath = Path.Combine(Path.GetTempPath(), "CommandTest", random);

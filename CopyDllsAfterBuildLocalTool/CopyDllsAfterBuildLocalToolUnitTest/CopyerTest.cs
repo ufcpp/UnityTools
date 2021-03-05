@@ -306,13 +306,14 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         }
 
         [Fact]
-        public void CopyDlls_Should_Skip_Copy_When_BinaryMatch()
+        public async Task CopyDlls_Should_Skip_Copy_When_BinaryMatch()
         {
             var destinations = _expected;
 
             CreateDestinationFolders(_destinationDir, destinations);
             // map of Dictionary<string, bytes[]>(fileName, bytes)
             var expectedFiles = Directory.GetFiles(_destinationDir).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            await Task.Delay(TimeSpan.FromSeconds(1)); // wait for file time update
 
             CreateTargetDir(_buildOutputs);
             CreateExcludes(_excludes);
@@ -354,13 +355,14 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         }
 
         [Fact]
-        public void CopyDlls_Should_Copy_When_BinaryMissmatch()
+        public async Task CopyDlls_Should_Copy_When_BinaryMissmatch()
         {
             var destinations = _expected;
 
             CreateDestinationFolders(_destinationDir, destinations, Guid.NewGuid().ToString());
             // map of Dictionary<string, bytes[]>(fileName, bytes)
             var expectedFiles = Directory.GetFiles(_destinationDir).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            await Task.Delay(TimeSpan.FromSeconds(1)); // wait for file time update
 
             CreateTargetDir(_buildOutputs);
             CreateExcludes(_excludes);

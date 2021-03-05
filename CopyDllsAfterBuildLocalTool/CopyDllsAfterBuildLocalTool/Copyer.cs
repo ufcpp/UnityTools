@@ -209,9 +209,12 @@ namespace CopyDllsAfterBuildLocalTool
                     logger.LogTrace($"Skipping copy. filename: {fileName}, reason: binary not changed.");
                     statistics.IncrementSkip();
                 }
-                // copied
-                logger.LogTrace($"Copied. filename: {fileName}");
-                statistics.IncrementCopy();
+                else
+                {
+                    // copied
+                    logger.LogTrace($"Copied. filename: {fileName}");
+                    statistics.IncrementCopy();
+                }
             }
 
             // prune destination garbage files. (not copied target)

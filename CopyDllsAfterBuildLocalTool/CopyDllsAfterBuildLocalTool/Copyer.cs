@@ -187,7 +187,7 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="destination"></param>
         private void Copy(IEnumerable<string> sources, string destination)
         {
-            if (Directory.Exists(destination))
+            if (!Directory.Exists(destination))
                 Directory.CreateDirectory(destination);
 
             foreach (var copyFrom in sources)

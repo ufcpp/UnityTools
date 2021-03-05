@@ -110,10 +110,10 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             program.Run(_projectDir, _targetDir);
             var actual = getActual(destinationPath);
             var i = 0;
-            foreach (var item in actual)
+            foreach (var item in actual.Keys)
             {
                 // File successfully copy
-                Assert.Equal(expected[i++], item.Key);
+                Assert.Contains(item, expected);
             }
             var expected2 = getActual(destinationPath);
 

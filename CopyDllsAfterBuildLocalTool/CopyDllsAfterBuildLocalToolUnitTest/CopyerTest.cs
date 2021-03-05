@@ -9,13 +9,41 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
 {
     public class CopyerTest : IDisposable
     {
-        private readonly string _destination = "../Dlls";
+        private readonly string _destination;
         private readonly string _pattern = "*";
         private readonly string[] _excludes = new[] { "UnityEngine", "UnityEditor" };
         private readonly (string folder, string[] files)[] _excludeFolders = new[]
         {
             ("ExcludeDlls", new[] { "System.Buffers.dll", "System.Memory.dll" }),
             ("ExcludeMeta", new[] { "foo.dll", "bar.dll" })
+        };
+
+        private readonly string[] _buildOutputs = new[]
+        {
+            "Class1.dll",
+            "Class1.pdb",
+            "Cocona.dll",
+            "ConsoleApp.dll",
+            "ConsoleApp.pdb",
+            "Microsoft.Extensions.DependencyInjection.dll",
+            "Microsoft.Extensions.Hosting.dll",
+            "Microsoft.Extensions.Logging.dll",
+            "System.Text.Json.dll",
+            "UnityEngine.dll",
+            "System.Buffers.dll",
+            "System.Memory.dll",
+        };
+        private readonly string[] _expected = new[]
+        {
+            "Class1.dll",
+            "Class1.pdb",
+            "Cocona.dll",
+            "ConsoleApp.dll",
+            "ConsoleApp.pdb",
+            "Microsoft.Extensions.DependencyInjection.dll",
+            "Microsoft.Extensions.Hosting.dll",
+            "Microsoft.Extensions.Logging.dll",
+            "System.Text.Json.dll",
         };
 
         private readonly string _projectDir;
@@ -29,6 +57,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             var random = Guid.NewGuid().ToString();
             _projectDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random);
             _targetDir = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random, "bin", "Debug", "net5.0");
+            _destination = Path.Combine(Path.GetTempPath(), "CopyDllsTest", random, "destinations", "Dlls");
             _settingsFile = "CopySettings.json";
             _settingsFilePath = Path.Combine(_projectDir, _settingsFile);
 
@@ -62,7 +91,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
 
             var copyer = new Copyer(_projectDir);
             var settings = copyer.GetSettings(_settingsFile);
-            Assert.Equal(_destination, settings.Destination);
+            Assert.Equal(CopySettings.SafeJsonStringReplace(_destination), settings.Destination);
             Assert.Equal(_pattern, settings.Pattern);
             Assert.Equal(_excludes, settings.Excludes);
             Assert.Equal(_excludeFolders.Select(x => x.folder).ToArray(), settings.ExcludeFolders);
@@ -240,41 +269,16 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         }
 
         [Fact]
-        public void CopyDlls_Should_Success()
+        public void CopyDlls_To_Empty_Destination_Should_Success()
         {
-            var buildOutputs = new[] {
-                "Class1.dll",
-                "Class1.pdb",
-                "Cocona.dll",
-                "ConsoleApp.dll",
-                "ConsoleApp.pdb",
-                "Microsoft.Extensions.DependencyInjection.dll",
-                "Microsoft.Extensions.Hosting.dll",
-                "Microsoft.Extensions.Logging.dll",
-                "System.Text.Json.dll",
-                "UnityEngine.dll",
-                "System.Buffers.dll",
-                "System.Memory.dll",
-            };
-            var expected = new[]
-            {
-                "Class1.dll",
-                "Class1.pdb",
-                "Cocona.dll",
-                "ConsoleApp.dll",
-                "ConsoleApp.pdb",
-                "Microsoft.Extensions.DependencyInjection.dll",
-                "Microsoft.Extensions.Hosting.dll",
-                "Microsoft.Extensions.Logging.dll",
-                "System.Text.Json.dll",
-            };
-
-            CreateTargetDir(buildOutputs);
+            CreateTargetDir(_buildOutputs);
             CreateExcludes(_excludes);
             foreach (var exclude in _excludeFolders)
             {
                 CreateExcludeFolders(exclude.folder, exclude.files);
             }
+
+            Assert.False(Directory.Exists(_destination));
 
             var json = $@"
 {{
@@ -294,21 +298,164 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             var copyer = new Copyer(_projectDir);
             var settings = copyer.GetSettings(_settingsFile);
             var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
-            copyer.Sync(_targetDir, settings.Destination, settings.Pattern, excludes);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
             var actual = Directory.GetFiles(settings.Destination).Select(x => Path.GetFileName(x)).OrderBy(x => x).ToArray();
-            Assert.Equal(expected, actual);
+            Assert.Equal(_expected, actual);
         }
 
         [Fact]
-        public void CopyDlls_Should_Skip_BinaryMatch_Destination()
+        public void CopyDlls_Should_Skip_Copy_When_BinaryMatch()
         {
-            // todo: add Binary Match skip test
+            var destinations = _expected;
+
+            CreateDestinationFolders(_destination, destinations);
+            // map of Dictionary<string, bytes[]>(fileName, bytes)
+            var expectedFiles = Directory.GetFiles(_destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+
+            CreateTargetDir(_buildOutputs);
+            CreateExcludes(_excludes);
+            foreach (var exclude in _excludeFolders)
+            {
+                CreateExcludeFolders(exclude.folder, exclude.files);
+            }
+
+            Assert.True(Directory.Exists(_destination));
+
+            var json = $@"
+{{
+""destination"": ""{_destination}"",
+""pattern"": ""{_pattern}"",
+""excludes"": [
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
+],
+""exclude_folders"": [
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
+]
+}}";
+            File.WriteAllText(_settingsFilePath, json);
+
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            var actual = Directory.GetFiles(settings.Destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            Assert.Equal(_expected, actual.Keys.OrderBy(x => x).ToArray());
+            foreach (var item in actual)
+            {
+                // binary match
+                Assert.Equal(expectedFiles[item.Key].Item1, item.Value.Item1);
+                // date not updated
+                Assert.Equal(expectedFiles[item.Key].Item2, item.Value.Item2);
+            }
         }
 
         [Fact]
-        public void CopyDlls_Should_Prune_Destination()
+        public void CopyDlls_Should_Copy_When_BinaryMissmatch()
         {
-            // todo: add Prune test
+            var destinations = _expected;
+
+            CreateDestinationFolders(_destination, destinations, Guid.NewGuid().ToString());
+            // map of Dictionary<string, bytes[]>(fileName, bytes)
+            var expectedFiles = Directory.GetFiles(_destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+
+            CreateTargetDir(_buildOutputs);
+            CreateExcludes(_excludes);
+            foreach (var exclude in _excludeFolders)
+            {
+                CreateExcludeFolders(exclude.folder, exclude.files);
+            }
+
+            Assert.True(Directory.Exists(_destination));
+
+            var json = $@"
+{{
+""destination"": ""{_destination}"",
+""pattern"": ""{_pattern}"",
+""excludes"": [
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
+],
+""exclude_folders"": [
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
+]
+}}";
+            File.WriteAllText(_settingsFilePath, json);
+
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            var actual = Directory.GetFiles(settings.Destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            Assert.Equal(_expected, actual.Keys.OrderBy(x => x).ToArray());
+            foreach (var item in actual)
+            {
+                // binary updated
+                Assert.NotEqual(expectedFiles[item.Key].Item1, item.Value.Item1);
+                // date updated
+                Assert.True(expectedFiles[item.Key].Item2 < item.Value.Item2);
+            }
+        }
+
+        [Fact]
+        public void CopyDlls_Should_Delete_GarbageFile_On_Destination()
+        {
+            var garbages = new[]
+            {
+                "Test.txt",
+                "Test.meta",
+                "Gomi",
+                "Gomi.meta",
+                "Foo.dll",
+                "Bar.dll",
+            };
+            var destinations = garbages.Concat(_expected).ToArray();
+
+            CreateDestinationFolders(_destination, destinations);
+            // map of Dictionary<string, bytes[]>(fileName, bytes)
+            var expectedFiles = Directory.GetFiles(_destination)
+                .Where(x => !garbages.Contains(Path.GetFileName(x)))
+                .ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+
+            CreateTargetDir(_buildOutputs);
+            CreateExcludes(_excludes);
+            foreach (var exclude in _excludeFolders)
+            {
+                CreateExcludeFolders(exclude.folder, exclude.files);
+            }
+
+            Assert.True(Directory.Exists(_destination));
+
+            var json = $@"
+{{
+""destination"": ""{_destination}"",
+""pattern"": ""{_pattern}"",
+""excludes"": [
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
+],
+""exclude_folders"": [
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
+]
+}}";
+            File.WriteAllText(_settingsFilePath, json);
+
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            var actual = Directory.GetFiles(settings.Destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            Assert.Equal(_expected, actual.Keys.OrderBy(x => x).ToArray());
+            foreach (var item in actual)
+            {
+                // binary match
+                Assert.Equal(expectedFiles[item.Key].Item1, item.Value.Item1);
+                // date not updated
+                Assert.Equal(expectedFiles[item.Key].Item2, item.Value.Item2);
+            }
         }
 
         private void CreateTempPath()
@@ -321,7 +468,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             if (Directory.Exists(_projectDir))
                 Directory.Delete(_projectDir, true);
         }
-        private void CreateTargetDir(string[] fileNames)
+        private void CreateTargetDir(string[] fileNames, string content = "")
         {
             if (!Directory.Exists(_targetDir))
                 Directory.CreateDirectory(_targetDir);
@@ -332,7 +479,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 if (File.Exists(filePath))
                     File.Delete(filePath);
 
-                File.WriteAllText(filePath, "");
+                File.WriteAllText(filePath, content);
             }
         }
         private void CreateExcludes(string[] fileNames)
@@ -346,7 +493,6 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 File.WriteAllText(filePath, "");
             }
         }
-
         private void CreateExcludeFolders(string directoryName, string[] fileNames)
         {
             var path = Path.Combine(_projectDir, directoryName);
@@ -361,6 +507,21 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
 
                 File.WriteAllText(filePath, "");
             }
+        }
+        private void CreateDestinationFolders(string path, string[] fileNames, string content = "")
+        {
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            foreach (var file in fileNames)
+            {
+                var filePath = Path.Combine(path, file);
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+
+                File.WriteAllText(filePath, content);
+            }
+
         }
     }
 }

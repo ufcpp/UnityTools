@@ -29,7 +29,7 @@ namespace CopyDllsAfterBuildLocalTool
                 var excludes = copyer.GetExcludes(settings.Excludes!, settings.ExcludeFolders!);
                 var destination = Path.Combine(trimedProjectDir, settings.Destination!);
 
-                copyer.Sync(trimedTargetdir, destination, settings.Pattern, excludes);
+                copyer.CopyDlls(trimedTargetdir, destination, settings.Pattern, excludes);
                 return 0;
             }
             catch (Exception ex)

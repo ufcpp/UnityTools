@@ -86,14 +86,14 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
-        /// Delete destination except copy then sync dlls from source to destination.
+        /// Delete destination except copy then copy dlls from source to destination.
         /// When filename is includes in excludes, it won't copy.
         /// </summary>
         /// <param name="source">copy source folder path</param>
         /// <param name="destination">copy destination folder path</param>
         /// <param name="pattern">source file name pattern to search.</param>
         /// <param name="excludes">excludes file names from copy.</param>
-        public void Sync(string source, string destination, string pattern, string[] excludes)
+        public void CopyDlls(string source, string destination, string pattern, string[] excludes)
         {
             logger.LogInformation("Copy DLLs");
 
@@ -126,9 +126,9 @@ namespace CopyDllsAfterBuildLocalTool
             Delete(deleteFiles);
 
             // copy!
-            CopyCore(sourceFiles, destination);
+            Copy(sourceFiles, destination);
 
-            logger.LogDebug($"Copy completed, total {_statistic.TotalCount}");
+            logger.LogDebug($"Copy completed, copied {_statistic.CopyCount}, skipped {_statistic.SkipCount}, deleted {_statistic.DeleteCount}");
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace CopyDllsAfterBuildLocalTool
         /// </summary>
         /// <param name="sources"></param>
         /// <param name="destination"></param>
-        private void CopyCore(IEnumerable<string> sources, string destination)
+        private void Copy(IEnumerable<string> sources, string destination)
         {
             foreach (var copyFrom in sources)
             {
@@ -232,7 +232,6 @@ namespace CopyDllsAfterBuildLocalTool
 
         public class Statistic
         {
-            public int TotalCount => _copyCount + _skipCount + _deleteCount;
             public int CopyCount => _copyCount;
             private int _copyCount = 0;
             public int SkipCount => _skipCount;
@@ -240,11 +239,6 @@ namespace CopyDllsAfterBuildLocalTool
             public int DeleteCount => _deleteCount;
             private int _deleteCount = 0;
 
-            public Statistic() { }
-            public Statistic(int copyCount, int skipCount, int deleteCount) 
-                => (_copyCount, _skipCount, _deleteCount) = (copyCount, skipCount, deleteCount);
-
-            public string GetProgressMessage() => $"copied {_copyCount}, skipped {_skipCount}, deleted {_deleteCount}";
             public void Reset() => (_copyCount, _skipCount, _deleteCount) = (0, 0, 0);
             public void IncrementCopy() => _copyCount++;
             public void IncrementSkip() => _skipCount++;

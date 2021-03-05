@@ -13,7 +13,7 @@ https://www.nuget.org/packages/CopyDllsAfterBuildLocalTools
 
 ```shell
 dotnet new tool-manifest
-dotnet tool install CopyDllsAfterBuildLocalTools --version 0.1.0
+dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
 ```
 
 * Step2. Add PostBuild event to your csproj.
@@ -24,18 +24,19 @@ dotnet tool install CopyDllsAfterBuildLocalTools --version 0.1.0
   </Target>
 ```
 
-* Step3. Put CopySettings.json on same directory of csproj.
+* Step3. Generate CopySettings.json on same directory of csproj, or copy json from other project.
 
-```json
-{
-  "destination": "../../project/Assets/Dlls",
-  "pattern": "*",
-  "excludes": [ "UnityEngine", "UnityEditor" ],
-  "exclude_folders": ["excludes"]
-}
+```shell
+dotnet tool run dotnet-copydllsafterbuild init
 ```
 
-Run `dotnet build` will work as like CopyDllsAfterBuild.
+* Step4. (Optional) Modify CopySettings.json if needed. You can check json is valid via command.
+
+```shell
+dotnet tool run dotnet-copydllsafterbuild validate
+```
+
+* Step5. Run `dotnet build` will work as like CopyDllsAfterBuild.
 
 ## TIPS
 
@@ -61,4 +62,14 @@ Yes, you can install as .NET Global Tools.
 ```shell
 dotnet tool install -g CopyDllsAfterBuildLocalTools --version 0.1.0
 dotnet-copydllsafterbuild run --project-dir <ProjectDir> --target-dir <TargetDir>
+```
+
+### I'm developer, can I run tool as dotnet run?
+
+Yes, you can run with `dotnet run`.
+
+```shell
+dotnet run --framework net5.0 -- init
+dotnet run --framework net5.0 -- validate
+dotnet run --framework net5.0 -- run --project-dir <ProjectDir> --target-dir <TargetDir>
 ```

@@ -34,8 +34,9 @@ namespace CopyDllsAfterBuildLocalTool
             }
             catch (Exception ex)
             {
-                logger.LogCritical($"{ex.Message} {ex.GetType().FullName} {ex.StackTrace}");
-                logger.LogInformation("NOTE: Set Environment variable COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
+                logger.LogError($"Failed run Copy DLLs. {ex.Message} ({ex.GetType().FullName})");
+                logger.LogCritical($"{ex.StackTrace}"); // output detail every time.
+                logger.LogInformationIfNotDebug("NOTE: Set Environment variable COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
                 return 1;
             }
         }
@@ -70,7 +71,7 @@ namespace CopyDllsAfterBuildLocalTool
                 var copyer = new Copyer(trimedProjectDir);
                 var settings = copyer.GetSettings(settingFile);
                 if (settings == null)
-                    return 1;
+                    throw new NullReferenceException("Tried load setting, but was null.");
 
                 logger.LogInformation($"Successfully load settings.");
                 logger.LogInformation(settings.ToString());
@@ -78,7 +79,9 @@ namespace CopyDllsAfterBuildLocalTool
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Failed load settings. {ex.Message}");
+                logger.LogError($"Failed load settings. {ex.Message} ({ex.GetType().FullName})");
+                logger.LogDebug($"{ex.StackTrace}");
+                logger.LogInformationIfNotDebug("NOTE: Set Environment variable COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
                 return 1;
             }
         }

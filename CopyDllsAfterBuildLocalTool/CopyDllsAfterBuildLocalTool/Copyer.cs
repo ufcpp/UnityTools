@@ -21,7 +21,7 @@ namespace CopyDllsAfterBuildLocalTool
 
         public Copyer(string projectDir)
         {
-            _projectDir = projectDir;
+            _projectDir = Path.GetFullPath(projectDir);
             _statisticDic = new Dictionary<string, Statistic>();
             foreach (var ext in unityPluginExtensions)
                 _statisticDic.Add(ext, new Statistic(ext));

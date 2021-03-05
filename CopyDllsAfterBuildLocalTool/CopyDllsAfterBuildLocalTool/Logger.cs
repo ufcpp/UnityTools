@@ -20,6 +20,7 @@ namespace CopyDllsAfterBuildLocalTool
         void LogInformation(string message);
         void LogTrace(string message);
         void LogWarning(string message);
+        void LogInformationIfNotDebug(string message);
     }
 
     // I don't want refer another packages like Microsoft.Extensions.Logging, just create simple logger.
@@ -68,6 +69,13 @@ namespace CopyDllsAfterBuildLocalTool
         public void LogWarning(string message) => Log(LogLevel.Warning, message);
         public void LogError(string message) => Log(LogLevel.Error, message);
         public void LogCritical(string message) => Log(LogLevel.Trace, message);
+        public void LogInformationIfNotDebug(string message)
+        {
+            if (LogLevel.Debug <= _logLevel)
+            {
+                LogInformation(message);
+            }
+        }
         public void Log(LogLevel logLevel, string message)
         {
             // no message formatter or gc friendly, just control level is enough.

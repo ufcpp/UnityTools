@@ -121,7 +121,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             {
                 program.Run(_projectDir, _targetDir);
                 var actual2nd = getActual(destinationPath);
-                Assert.Equal(actual.Keys, actual2nd.Keys);
+                Assert.Equal(expected2.Keys, actual2nd.Keys);
                 foreach (var actualItem in actual2nd)
                 {
                     // binary match
@@ -137,7 +137,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 var before3rd = getActual(destinationPath);
                 program.Run(_projectDir, _targetDir);
                 var actual3rd = getActual(destinationPath);
-                Assert.Equal(actual.Keys, actual3rd.Keys); // deleted!
+                Assert.Equal(expected2.Keys, actual3rd.Keys); // deleted!
                 foreach (var actualItem in actual3rd)
                 {
                     // binary match
@@ -153,7 +153,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 CreateTargetDir(changed, Guid.NewGuid().ToString());
                 program.Run(_projectDir, _targetDir);
                 var actual4th = getActual(destinationPath);
-                Assert.Equal(actual.Keys, actual4th.Keys);
+                Assert.Equal(expected2.Keys, actual4th.Keys);
                 foreach (var actualItem in actual4th)
                 {
                     if (changed.Contains(actualItem.Key))
@@ -180,7 +180,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 CreateTargetDir(adds, Guid.NewGuid().ToString());
                 program.Run(_projectDir, _targetDir);
                 var actual5th = getActual(destinationPath);
-                Assert.Equal(actual.Keys.Concat(adds).OrderBy(x => x).ToArray(), actual5th.Keys.ToArray());
+                Assert.Equal(expected3.Keys.Concat(adds).OrderBy(x => x).ToArray(), actual5th.Keys.OrderBy(x => x).ToArray());
                 foreach (var actualItem in actual5th)
                 {
                     if (adds.Contains(actualItem.Key))

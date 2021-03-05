@@ -1,6 +1,7 @@
 ﻿using Cocona;
 using System;
 using System.IO;
+using System.Text;
 
 namespace CopyDllsAfterBuildLocalTool
 {
@@ -19,8 +20,8 @@ namespace CopyDllsAfterBuildLocalTool
         {
             try
             {
-                var trimedProjectDir = projectDir.TrimStart('"').TrimEnd('"');
-                var trimedTargetdir = targetDir.TrimStart('"').TrimEnd('"');
+                var trimedProjectDir = TrimInput(projectDir);
+                var trimedTargetdir = TrimInput(targetDir);
 
                 var copyer = new Copyer(trimedProjectDir);
                 var settings = copyer.GetSettings(settingFile);
@@ -32,9 +33,38 @@ namespace CopyDllsAfterBuildLocalTool
             catch (Exception ex)
             {
                 logger.LogCritical($"{ex.Message} {ex.GetType().FullName} {ex.StackTrace}");
-                logger.LogInformation("Set COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
+                logger.LogInformation("NOTE: Set Environment variable COPYDLLS_LOGLEVEL=Debug or Trace to see more detail logs.");
                 throw;
             }
         }
+
+        /// <summary>
+        /// Initialize environment. Output initial settings JSON file to path specified.
+        /// </summary>
+        /// <param name="projectDir">--project-dir. Project Root directory. Should be $(ProjectDir)</param>
+        /// <param name="settingFile">--setting-file. JSON file settings to output.</param>
+        public void init(string projectDir = ".", string settingFile = "CopySettings.json")
+        {
+            var trimedProjectDir = TrimInput(projectDir);
+
+            var template = CopySettings.GetTemplateJson();
+            var path = Path.Combine(trimedProjectDir, settingFile);
+            logger.LogInformation($"Output template Settings. Output {settingFile}");
+            File.WriteAllText(path, template, Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// Confirm setting JON file is valid or not.
+        /// </summary>
+        /// <param name="projectDir"></param>
+        /// <param name="settingFile"></param>
+        public void Validate(string projectDir = ".", string settingFile = "CopySettings.json")
+        {
+            var trimedProjectDir = TrimInput(projectDir);
+            var copyer = new Copyer(trimedProjectDir);
+            copyer.GetSettings(settingFile);
+        }
+
+        private string TrimInput(string input) => input.TrimStart('"').TrimEnd('"');
     }
 }

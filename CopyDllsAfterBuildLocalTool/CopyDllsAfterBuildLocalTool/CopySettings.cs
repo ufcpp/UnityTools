@@ -17,12 +17,16 @@ namespace CopyDllsAfterBuildLocalTool
     public class CopySettings
     {
         private static readonly ILogger logger = Logger.Instance;
-        private static readonly JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions deserializeOptions = new JsonSerializerOptions
         {
             IgnoreNullValues = true, // exclude_folders is often not defined.
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // follow to normal JSON style.
             AllowTrailingCommas = true, // allow loose JSON format
             ReadCommentHandling = JsonCommentHandling.Skip, // allow JSON with Comments.
+        };
+        private static readonly JsonSerializerOptions serializeOptions = new JsonSerializerOptions()
+        {
+            IgnoreNullValues = false, // keep exclude_folders even if it was empty array.
         };
 
         /// <summary>
@@ -35,6 +39,7 @@ namespace CopyDllsAfterBuildLocalTool
         /// </summary>
         [JsonPropertyName("pattern")]
         public string Pattern { get; set; } = "*";
+
         /// <summary>
         /// Exclude file names you don't want to copy from. Exact file name match when name is end with $, others will be prefix match.
         /// </summary>
@@ -57,7 +62,7 @@ namespace CopyDllsAfterBuildLocalTool
         public static CopySettings LoadJson(string json)
         {
             logger.LogTrace($"Trying to deserialize settings file\n{json}");
-            var serialized = JsonSerializer.Deserialize<CopySettings>(json, serializeOptions);
+            var serialized = JsonSerializer.Deserialize<CopySettings>(json, deserializeOptions);
 
             if (serialized == null)
                 throw new NullReferenceException($"Deserialized json but result was empty. May be source json is empty.");
@@ -71,6 +76,23 @@ namespace CopyDllsAfterBuildLocalTool
             serialized.ExcludeFolders ??= Array.Empty<string>();
 
             return serialized;
+        }
+
+        /// <summary>
+        /// Get template json with default value.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTemplateJson()
+        {
+            var template =  new CopySettings()
+            {
+                Destination = "../../project/Assets/Dlls",
+                Pattern = "*",
+                Excludes = new[] { "UnityEngine", "UnityEditor" },
+                ExcludeFolders = new string[] { },
+            };
+            var json = JsonSerializer.Serialize<CopySettings>(template, serializeOptions);
+            return json;
         }
     }
 }

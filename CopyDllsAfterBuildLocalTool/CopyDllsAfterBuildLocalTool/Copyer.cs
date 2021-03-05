@@ -13,13 +13,25 @@ namespace CopyDllsAfterBuildLocalTool
 
         private static readonly string[] unityPluginExtensions = new[] { "dll", "pdb", "xml" };
         private static readonly ILogger logger = Logger.Instance;
+        // destination depth will be only top directory. ignore for child folder in destination path.
+        private static readonly SearchOption searchOption = SearchOption.TopDirectoryOnly;
 
         private readonly string _projectDir;
-        // destination depth will be only top directory. ignore for child folder in destination path.
-        private readonly SearchOption _destinationDepth = SearchOption.TopDirectoryOnly;
+        private readonly Dictionary<string, Statistic> _statisticDic;
 
-        public Copyer(string projectDir) => _projectDir = projectDir;
+        public Copyer(string projectDir)
+        {
+            _projectDir = projectDir;
+            _statisticDic = new Dictionary<string, Statistic>();
+            foreach (var ext in unityPluginExtensions)
+                _statisticDic.Add(ext, new Statistic(ext));
+        }
 
+        /// <summary>
+        /// Get Settings from file.
+        /// </summary>
+        /// <param name="settingsFile"></param>
+        /// <returns></returns>
         public CopySettings GetSettings(string settingsFile)
         {
             var settingsPath = Path.Combine(_projectDir, settingsFile);
@@ -99,45 +111,26 @@ namespace CopyDllsAfterBuildLocalTool
                 logger.LogDebug($"Begin Copy dlls. extensions {ext}, source {source}");
 
                 // source candidates
-                var candicates = Directory.EnumerateFiles(source, $"{pattern}.{ext}", _destinationDepth);
+                var candicates = Directory.EnumerateFiles(source, $"{pattern}.{ext}", searchOption);
                 if (!candicates.Any())
                 {
                     // origin not found, go next.
-                    logger.LogTrace($"skipping copy. extension: {ext}, reason: Source files not found, skip to next.");
+                    logger.LogTrace($"skipping copy, go next extention. extension: {ext}, reason: Source files not found.");
                     continue;
                 }
 
-                // classify excludes with ExactMatch and PrefixMatch
-                var length = excludes.Length;
-                var exactMatchLength = excludes.Where(x => x.EndsWith(ExactMatchMarker)).Count();
-                var exactMatchExcludeFiles = new string[exactMatchLength];
-                var prefixMatchLength = excludes.Length - exactMatchLength;
-                var prefixMatchExcludeFiles = new string[prefixMatchLength];
-                var (prefixIndex, exactIndex) = (0, 0);
-                for (var i = 0; i < length; i++)
-                {
-                    if (excludes[i].EndsWith(ExactMatchMarker))
-                    {
-                        // exact match. remove $ marker.
-                        exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + ext;
-                        exactIndex++;
-                    }
-                    else
-                    {
-                        // prefix match
-                        prefixMatchExcludeFiles[prefixIndex] = excludes[i];
-                        prefixIndex++;
-                    }
-                }
-
                 // determine source files
-                var sourceFiles = SkipExcludes(candicates, exactMatchExcludeFiles, prefixMatchExcludeFiles);
+                var sourceFiles = SkipExcludes(candicates, excludes, ext);
 
                 // synchronize source to destination
                 SyncCore(sourceFiles, destination, ext);
 
-                // todo: add statistics
+                // show progress statistics
+                logger.LogDebug(GetCurrentStatistics(ext).GetProgressMessage());
             }
+
+            var resultStatistic = Statistic.Merge(_statisticDic);
+            logger.LogDebug($"Copy completed, total result. {resultStatistic.GetProgressMessage()}");
         }
 
         /// <summary>
@@ -147,8 +140,34 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="exactMatchExcludeFiles"></param>
         /// <param name="prefixMatchExcludeFiles"></param>
         /// <returns></returns>
-        private string[] SkipExcludes(IEnumerable<string> sourceFiles, string[] exactMatchExcludeFiles, string[] prefixMatchExcludeFiles)
+        private string[] SkipExcludes(IEnumerable<string> sourceFiles, string[] excludes, string extention)
         {
+            var statistics = GetCurrentStatistics(extention);
+
+            // classify excludes with ExactMatch and PrefixMatch
+            var length = excludes.Length;
+            var exactMatchLength = excludes.Where(x => x.EndsWith(ExactMatchMarker)).Count();
+            var exactMatchExcludeFiles = new string[exactMatchLength];
+            var prefixMatchLength = excludes.Length - exactMatchLength;
+            var prefixMatchExcludeFiles = new string[prefixMatchLength];
+            var (prefixIndex, exactIndex) = (0, 0);
+            for (var i = 0; i < length; i++)
+            {
+                if (excludes[i].EndsWith(ExactMatchMarker))
+                {
+                    // exact match. remove $ marker.
+                    exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + extention;
+                    exactIndex++;
+                }
+                else
+                {
+                    // prefix match
+                    prefixMatchExcludeFiles[prefixIndex] = excludes[i];
+                    prefixIndex++;
+                }
+            }
+
+            // determine source files
             var outputs = new List<string>();
             foreach (var sourceFile in sourceFiles)
             {
@@ -157,6 +176,7 @@ namespace CopyDllsAfterBuildLocalTool
                 {
                     // skipped
                     logger.LogTrace($"Skipping copy. filename: {fileName}, reason: match to exclude.");
+                    statistics.IncrementSkip();
                     continue;
                 }
                 outputs.Add(sourceFile);
@@ -172,6 +192,8 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="extention"></param>
         private void SyncCore(IEnumerable<string> sources, string destination, string extention)
         {
+            var statistics = GetCurrentStatistics(extention);
+
             // copy
             foreach (var copyFrom in sources)
             {
@@ -184,38 +206,67 @@ namespace CopyDllsAfterBuildLocalTool
                 if (result)
                 {
                     // skipped
-                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: same binary.");
+                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: binary not changed.");
+                    statistics.IncrementSkip();
                 }
                 // copied
                 logger.LogTrace($"Copied. filename: {fileName}");
+                statistics.IncrementCopy();
             }
 
-            // prune
-            var destinationFiles = Directory.EnumerateFiles(destination, $"*.{extention}", _destinationDepth);
+            // prune destination garbage files. (not copied target)
+            var destinationFiles = Directory.EnumerateFiles(destination, $"*.{extention}", searchOption);
             var pruneExcludes = sources.Select(x => Path.Combine(destination, Path.GetFileName(x))).ToArray();
-            Prune(destinationFiles, pruneExcludes);
-        }
-
-        /// <summary>
-        /// Delete destination files not needed any more.
-        /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="ext"></param>
-        private static void Prune(IEnumerable<string> targets, IEnumerable<string> excludes)
-        {
-            var filesToRemove = targets.Except(excludes);
-            foreach (var item in filesToRemove)
+            var garbageFiles = destinationFiles.Except(pruneExcludes);
+            foreach (var garbageFile in garbageFiles)
             {
-                if (File.Exists(item))
+                if (File.Exists(garbageFile))
                 {
                     // pruned
-                    logger.LogTrace($"Prune unneccesary file. filename: {Path.GetFileName(item)}, reason: marked as prune.");
-                    File.Delete(item);
+                    logger.LogTrace($"Prune unneccesary file. filename: {Path.GetFileName(garbageFile)}, reason: marked as prune.");
+                    File.Delete(garbageFile);
+                    statistics.IncrementDelete();
                 }
             }
         }
 
+        private Statistic GetCurrentStatistics(string ext) => _statisticDic[ext];
         private static bool ExactMatch(string[] source, string input) => source.Contains(input);
         private static bool PrefixMatch(string[] source, string input) => source.Any(x => input.StartsWith(x));
+
+        public class Statistic
+        {
+            public string Name { get; }
+            public int TotalCount => _copyCount + _skipCount + _deleteCount;
+            public int CopyCount => _copyCount;
+            private int _copyCount = 0;
+            public int SkipCount => _skipCount;
+            private int _skipCount = 0;
+            public int DeleteCount => _deleteCount;
+            private int _deleteCount = 0;
+
+            public Statistic(string name) => Name = name;
+            public Statistic(string name, int copyCount, int skipCount, int deleteCount) 
+                => (Name, _copyCount, _skipCount, _deleteCount) = (name, copyCount, skipCount, deleteCount);
+
+            public string GetProgressMessage() => $"copied {_copyCount}, skipped {_skipCount}, deleted {_deleteCount}";
+            public void Reset() => (_copyCount, _skipCount, _deleteCount) = (0, 0, 0);
+            public void IncrementCopy() => _copyCount++;
+            public void IncrementSkip() => _skipCount++;
+            public void IncrementDelete() => _deleteCount++;
+
+            public static Statistic Merge(Dictionary<string, Statistic> dic) => Merge(dic.Values);
+            public static Statistic Merge(IEnumerable<Statistic> statistics)
+            {
+                var (copy, skip, delete) = (0, 0,0);
+                foreach (var statistic in statistics)
+                {
+                    copy += statistic.CopyCount;
+                    skip = statistic.SkipCount;
+                    delete = statistic.DeleteCount;
+                }
+                return new Statistic("__MERGED__", copy, skip, delete);
+            }
+        }
     }
 }

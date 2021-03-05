@@ -35,9 +35,7 @@ namespace CopyDllsAfterBuildLocalTool
                     var sourceBufferSlice = sourceBuffer.Length < BufferSliceSize ? sourceBuffer : sourceBuffer[..BufferSliceSize];
                     // binary equal check for source[0..N] == target[0..N]
                     if (!sourceBufferSlice.SequenceEqual(targetBuffer[..targetRead]))
-                    {
                         return false;
-                    }
 
                     // next slice...
                     sourceBuffer = sourceBuffer[targetRead..];

@@ -86,8 +86,7 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
-        /// Sync dlls from source folder to destination folder.
-        /// Source dlls will search with pattern.
+        /// Delete destination except copy then sync dlls from source to destination.
         /// When filename is includes in excludes, it won't copy.
         /// </summary>
         /// <param name="source">copy source folder path</param>
@@ -121,7 +120,7 @@ namespace CopyDllsAfterBuildLocalTool
                 sourceFiles.AddRange(sources);
             }
 
-            // delete all except for Synced target.
+            // delete all except copy target.
             var destinationFiles = Directory.EnumerateFiles(destination, $"*", searchOption);
             var deleteFiles = destinationFiles.Except(sourceFiles.Select(x => Path.Combine(destination, Path.GetFileName(x)))).ToArray();
             Delete(deleteFiles);
@@ -188,7 +187,6 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="destination"></param>
         private void CopyCore(IEnumerable<string> sources, string destination)
         {
-            // copy
             foreach (var copyFrom in sources)
             {
                 var fileName = Path.GetFileName(copyFrom);
@@ -199,15 +197,15 @@ namespace CopyDllsAfterBuildLocalTool
                 var result = FileWriter.Write(sourceBinary, copyTo, WriteCheckOption.BinaryEquality);
                 if (result)
                 {
-                    // skipped
-                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: binary not changed.");
-                    _statistic.IncrementSkip();
-                }
-                else
-                {
                     // copied
                     logger.LogTrace($"Copied. filename: {fileName}");
                     _statistic.IncrementCopy();
+                }
+                else
+                {
+                    // skipped
+                    logger.LogTrace($"Skipping copy. filename: {fileName}, reason: binary not changed.");
+                    _statistic.IncrementSkip();
                 }
             }
         }

@@ -187,6 +187,9 @@ namespace CopyDllsAfterBuildLocalTool
         /// <param name="destination"></param>
         private void Copy(IEnumerable<string> sources, string destination)
         {
+            if (Directory.Exists(destination))
+                Directory.CreateDirectory(destination);
+
             foreach (var copyFrom in sources)
             {
                 var fileName = Path.GetFileName(copyFrom);
@@ -194,11 +197,12 @@ namespace CopyDllsAfterBuildLocalTool
 
                 // Write source file to destination path
                 var sourceBinary = File.ReadAllBytes(copyFrom);
-                var result = FileWriter.Write(sourceBinary, copyTo, WriteCheckOption.BinaryEquality);
-                if (result)
+                var result = FileChecker.Exists(sourceBinary, copyTo, WriteCheckOption.BinaryEquality);
+                if (!result)
                 {
-                    // copied
-                    logger.LogTrace($"Copied. filename: {fileName}");
+                    // File Copy include attributes/timestamp
+                    File.Copy(copyFrom, copyTo, true);
+                    logger.LogTrace($"Copyied. filename: {fileName}");
                     _statistic.IncrementCopy();
                 }
                 else

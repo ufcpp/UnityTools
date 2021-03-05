@@ -4,7 +4,7 @@ using System.IO;
 
 namespace CopyDllsAfterBuildLocalTool
 {
-    public class FileWriter
+    public class FileChecker
     {
         private const int BufferSliceSize = 1024;
 
@@ -41,35 +41,30 @@ namespace CopyDllsAfterBuildLocalTool
         }
 
         /// <summary>
-        /// Write binary to path.
+        /// Check path exists with options
         /// </summary>
         /// <param name="source"></param>
         /// <param name="path"></param>
         /// <param name="option"></param>
-        /// <returns>true when write, false when skipped</returns>
-        public static bool Write(ReadOnlySpan<byte> source, string path, WriteCheckOption option = WriteCheckOption.None)
+        /// <returns></returns>
+        public static bool Exists(ReadOnlySpan<byte> source, string path, WriteCheckOption option = WriteCheckOption.None)
         {
             // if exisiting
             if (File.Exists(path))
             {
-                // do nothing for binary equal file.
                 if (option == WriteCheckOption.BinaryEquality)
                 {
+                    // binary equality check
                     using var destination = File.OpenRead(path);
-                    if (Compare(source, destination))
-                        return false;
+                    return Compare(source, destination);
+                }
+                else
+                {
+                    // only file existing check
+                    return true;
                 }
             }
-
-            // Write or Overwrite
-            var folder = Path.GetDirectoryName(path);
-            if (folder == null)
-                throw new ArgumentNullException($"Destination path {path} is root path, you must set full filepath.");
-            if (Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
-            using var file = File.Open(path, FileMode.Create, FileAccess.Write);
-            file.Write(source);
-            return true;
+            return false;
         }
     }
 

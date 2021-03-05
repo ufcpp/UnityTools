@@ -10,18 +10,18 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
 {
     public class CommandTest
     {
+        private readonly string _basePath;
         private readonly string _projectDir;
         private readonly string _targetDir;
         private readonly string _settings;
-        private readonly string _destinationDir;
 
         // setup
         public CommandTest()
         {
             var random = Guid.NewGuid().ToString();
-            _projectDir = Path.Combine(Path.GetTempPath(), "CommandTest", random);
-            _targetDir = Path.Combine(Path.GetTempPath(), "CommandTest", random, "bin", "Debug", "net5.0");
-            _destinationDir = Path.Combine(Path.GetTempPath(), "CommandTest", random, "destinations", "Dlls");
+            _basePath = Path.Combine(Path.GetTempPath(), "CommandTest", random);
+            _projectDir = Path.Combine(_basePath, "sln", "projectDir");
+            _targetDir = Path.Combine(_basePath, "sln", "projectDir", "bin", "Debug", "net5.0");
             _settings = Path.Combine(_projectDir, "CopySettings.json");
 
             if (!Directory.Exists(_projectDir))
@@ -31,8 +31,8 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         // teardown
         public void Dispose()
         {
-            if (Directory.Exists(_projectDir))
-                Directory.Delete(_projectDir, true);
+            if (Directory.Exists(_basePath))
+                Directory.Delete(_basePath, true);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                 // File successfully copy
                 Assert.Equal(expected[i++], item.Key);
             }
-            var expected2 = actual;
+            var expected2 = getActual(destinationPath);
 
             // 2nd run. without change
             {
@@ -172,6 +172,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                     }
                 }
             }
+            var expected3 = getActual(destinationPath);
 
             // 5th run. add file to source.
             {
@@ -190,9 +191,9 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                     else
                     {
                         // binary match
-                        Assert.Equal(expected2[actualItem.Key].bytes, actualItem.Value.bytes);
+                        Assert.Equal(expected3[actualItem.Key].bytes, actualItem.Value.bytes);
                         // date not updated
-                        Assert.Equal(expected2[actualItem.Key].date, actualItem.Value.date);
+                        Assert.Equal(expected3[actualItem.Key].date, actualItem.Value.date);
                     }
                 }
             }

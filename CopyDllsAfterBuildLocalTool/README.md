@@ -22,6 +22,7 @@ dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
 
 ```csproj
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="dotnet tool restore" /> 
     <Exec Command="dotnet tool run dotnet-copydllsafterbuild run &#45;&#45;project-dir $(ProjectDir) &#45;&#45;target-dir $(TargetDir)" />
   </Target>
 ```
@@ -32,6 +33,20 @@ dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
 
 ```shell
 dotnet tool run dotnet-copydllsafterbuild init
+```
+
+This will output CopySettings.json template.
+
+```json
+{
+  "destination": "../../project/Assets/Dlls",
+  "pattern": "*",
+  "excludes": [
+    "UnityEngine",
+    "UnityEditor"
+  ],
+  "exclude_folders": []
+}
 ```
 
 * Step4. (Optional) Modify CopySettings.json if needed. You can check json is valid via `validate` command.
@@ -58,6 +73,15 @@ COPYDLLS_LOGLEVEL=Debug && dotnet build
 ```
 
 > Windows users, use `set COPYDLLS_LOGLEVEL=Debug`.
+
+### Is Unity .meta file also deleted via tool?
+
+No, `*.meta` files exsisting on destination path will not be deleted via tool.
+
+### Is .gitignore file or other . files deleted via tool?
+
+Yes, all file names except `*.meta` will be deleted.
+Please move `.gitignore` file to outside destination.
 
 ### Can I run tool as ConsoleApp?
 

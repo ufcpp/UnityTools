@@ -8,7 +8,7 @@ using Xunit;
 
 namespace CopyDllsAfterBuildLocalToolUnitTest
 {
-    public class E2E_CommandTest : IDisposable
+    public class CommandTest : IDisposable
     {
         private readonly string _basePath;
         private readonly string _projectDir;
@@ -16,7 +16,7 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
         private readonly string _settings;
 
         // setup
-        public E2E_CommandTest()
+        public CommandTest()
         {
             var random = Guid.NewGuid().ToString();
             _basePath = Path.Combine(Path.GetTempPath(), "CommandTest", random);
@@ -146,7 +146,8 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
 
             // 3rd run. add garbage file to destination
             {
-                File.WriteAllText(Path.Combine(destinationPath, "a"), "abcde");
+                var garbageFile = Path.Combine(destinationPath, "a");
+                File.WriteAllText(garbageFile, "abcde");
                 var before3rd = getActual(destinationPath);
                 program.Run(_projectDir, _targetDir);
                 var actual3rd = getActual(destinationPath);
@@ -158,6 +159,8 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
                     // date not updated
                     Assert.Equal(expected2[actualItem.Key].date, actualItem.Value.date);
                 }
+                // garbage file must be deleted.
+                Assert.False(File.Exists(garbageFile));
             }
 
             // 4th run. change source dll.

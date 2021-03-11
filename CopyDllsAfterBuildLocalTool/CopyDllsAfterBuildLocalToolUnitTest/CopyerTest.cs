@@ -411,10 +411,10 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             var garbages = new[]
             {
                 "Test.txt",
-                "Test.meta",
+                "Test.meta1",
                 "Gomi",
-                "Gomi.meta",
-                "Foo.dll",
+                "Gomi.so",
+                "Foo.a",
                 "Bar.dll",
             };
             var destinations = garbages.Concat(_expected).ToArray();
@@ -455,6 +455,70 @@ namespace CopyDllsAfterBuildLocalToolUnitTest
             copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
             var actual = Directory.GetFiles(settings.Destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
             Assert.Equal(_expected, actual.Keys.OrderBy(x => x).ToArray());
+            foreach (var item in actual)
+            {
+                // binary match
+                Assert.Equal(expectedFiles[item.Key].Item1, item.Value.Item1);
+                // date not updated
+                Assert.Equal(expectedFiles[item.Key].Item2, item.Value.Item2);
+            }
+        }
+
+        [Fact]
+        public void CopyDlls_Should_Keep_Meta_On_Destination()
+        {
+            // should not be deleted
+            var metas = new[]
+            {
+                "Class1.meta",
+                "Cocona.meta",
+                "Gomi.meta",
+            };
+            var garbageFiles = new[]
+            {
+                "Gomi",
+                "Nantoka.so",
+                "androidsettings.xml",
+                "wonderfule.pid"
+            };
+            var destinations = metas.Concat(garbageFiles).Concat(_expected).ToArray();
+
+            CreateDestinationFolders(_destinationDir, destinations);
+            // map of Dictionary<string, bytes[]>(fileName, bytes)
+            var expectedFiles = Directory.GetFiles(_destinationDir)
+                .Where(x => !garbageFiles.Contains(Path.GetFileName(x)))
+                .ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+
+            CreateTargetDir(_buildOutputs);
+            CreateExcludes(_excludes);
+            foreach (var exclude in _excludeFolders)
+            {
+                CreateExcludeFolders(exclude.folder, exclude.files);
+            }
+
+            Assert.True(Directory.Exists(_destinationDir));
+
+            var json = $@"
+{{
+""destination"": ""{_destinationDir}"",
+""pattern"": ""{_pattern}"",
+""excludes"": [
+    ""{_excludes[0]}"",
+    ""{_excludes[1]}""
+],
+""exclude_folders"": [
+    ""{_excludeFolders[0].folder}"",
+    ""{_excludeFolders[1].folder}""
+]
+}}";
+            File.WriteAllText(_settingsFilePath, json);
+
+            var copyer = new Copyer(_projectDir);
+            var settings = copyer.GetSettings(_settingsFile);
+            var excludes = copyer.GetExcludes(settings.Excludes, settings.ExcludeFolders);
+            copyer.CopyDlls(_targetDir, settings.Destination, settings.Pattern, excludes);
+            var actual = Directory.GetFiles(settings.Destination).ToDictionary(kv => Path.GetFileName(kv), kv => (File.ReadAllBytes(kv), File.GetLastWriteTime(kv)));
+            Assert.Equal(expectedFiles.Keys.OrderBy(x => x), actual.Keys.OrderBy(x => x));
             foreach (var item in actual)
             {
                 // binary match

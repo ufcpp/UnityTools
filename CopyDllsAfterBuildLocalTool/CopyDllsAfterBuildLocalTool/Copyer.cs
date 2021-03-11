@@ -12,6 +12,7 @@ namespace CopyDllsAfterBuildLocalTool
         private const string ExactMatchMarker = "$";
 
         private static readonly string[] unityPluginExtensions = new[] { "dll", "pdb", "xml" };
+        private static readonly string[] destinationIgnoreExtensions = new[] { ".meta" };
         private static readonly ILogger logger = Logger.Instance;
         // destination depth will be only top directory. ignore for child folder in destination path.
         private static readonly SearchOption searchOption = SearchOption.TopDirectoryOnly;
@@ -122,7 +123,10 @@ namespace CopyDllsAfterBuildLocalTool
 
             // delete all except copy target.
             var destinationFiles = Directory.EnumerateFiles(destination, $"*", searchOption);
-            var deleteFiles = destinationFiles.Except(sourceFiles.Select(x => Path.Combine(destination, Path.GetFileName(x)))).ToArray();
+            var deleteFiles = destinationFiles
+                .Where(x => !destinationIgnoreExtensions.Contains(Path.GetExtension(x)))
+                .Except(sourceFiles.Select(x => Path.Combine(destination, Path.GetFileName(x))))
+                .ToArray();
             Delete(deleteFiles);
 
             // copy!

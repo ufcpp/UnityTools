@@ -17,7 +17,7 @@
     <Description>Copy DLLs/PDBs to a external folder on post build.</Description>
     <Copyright>Nobuyuki Iwanaga</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuild</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ufcpp/UnityTools/blob/master/CopyDllsAfterBuildLocalTool</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

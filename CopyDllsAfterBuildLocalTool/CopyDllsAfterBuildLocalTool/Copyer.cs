@@ -11,7 +11,7 @@ namespace CopyDllsAfterBuildLocalTool
         // `$` means end of a file name exclude the extension. if file name is end with this marker, will do exact match.
         private const string ExactMatchMarker = "$";
 
-        private static readonly string[] unityPluginExtensions = new[] { "dll", "pdb", "xml" };
+        private static readonly string[] unityPluginExtensions = new[] { ".dll", ".pdb", ".xml" };
         private static readonly string[] destinationIgnoreExtensions = new[] { ".meta" };
         private static readonly ILogger logger = Logger.Instance;
         // destination depth will be only top directory. ignore for child folder in destination path.
@@ -108,7 +108,7 @@ namespace CopyDllsAfterBuildLocalTool
             foreach (var ext in unityPluginExtensions)
             {
                 // source candidates
-                var candicates = Directory.EnumerateFiles(source, $"{pattern}.{ext}", searchOption);
+                var candicates = Directory.EnumerateFiles(source, $"{pattern}{ext}", searchOption);
                 if (!candicates.Any())
                 {
                     // origin not found, go next.
@@ -156,7 +156,7 @@ namespace CopyDllsAfterBuildLocalTool
                 if (excludes[i].EndsWith(ExactMatchMarker))
                 {
                     // exact match. remove $ marker.
-                    exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + "." + extention;
+                    exactMatchExcludeFiles[exactIndex] = excludes[i].Substring(0, excludes[i].Length - 1) + extention;
                     exactIndex++;
                 }
                 else

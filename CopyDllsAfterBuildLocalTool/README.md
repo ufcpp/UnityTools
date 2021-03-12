@@ -13,7 +13,7 @@ Steps to use in your project.
 
 ```shell
 dotnet new tool-manifest
-dotnet tool install CopyDllsAfterBuildLocalTool --version 0.1.0
+dotnet tool install CopyDllsAfterBuildLocalTool
 ```
 
 > TIPS: See [Tutorial: Install and use \.NET local tools \- \.NET CLI \| Microsoft Docs](https://docs.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use) for more details.
